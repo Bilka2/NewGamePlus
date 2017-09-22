@@ -1,6 +1,6 @@
 require("mod-gui")
 require("gui")
-DEBUG_MODE = false
+DEBUG_MODE = true
 
 local function debug_log(msg)
 	if DEBUG_MODE then
@@ -19,6 +19,7 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 end)
 
 local function use_current_map_gen(player)
+	-- TODO: Add map_settings here
 	local frame_flow = mod_gui.get_frame_flow(player)
 	local surface = player.surface
 	local map_gen_settings = surface.map_gen_settings
@@ -61,8 +62,18 @@ end
 
 -- WOLRD GEN --
 local function textfield_to_uint(textfield)
-	if textfield.text and tonumber(textfield.text) and (tonumber(textfield.text) >= 0) and (tonumber(textfield.text) <= 4294967295) and (math.floor(tonumber(textfield.text)) == tonumber(textfield.text)) then
-		return tonumber(textfield.text)
+	local number = tonumber(textfield.text)
+	if textfield.text and number and (number >= 0) and (number <= 4294967295) and (math.floor(number) == number) then
+		return number
+	else
+		return false
+	end
+end
+
+local function textfield_to_number(textfield)
+	local number = tonumber(textfield.text)
+	if textfield.text and number and (number >= 0) then
+		return number
 	else
 		return false
 	end
@@ -88,6 +99,15 @@ local function change_map_settings(player)
 		player.print({"msg.new-game-plus-start-invalid-technology-multiplier"})
 		return false
 	end
+
+	-- TODO --
+	-- new-game-plus-reset-evo-checkbox
+	-- REDO ALL THE THINGS RELATION TO THE MORE GUI BECAUSE I CHANGED THE STRUCTURE YAY
+	-- Add all evo stuff
+	-- add pollution
+	
+	
+	
 	return true
 end
 

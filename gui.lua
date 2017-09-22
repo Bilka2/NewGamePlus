@@ -1,5 +1,7 @@
 require("mod-gui")
 
+-- TODO: add pollution
+
 -- GUI --
 function kill_gui(player)
 	local button_flow = mod_gui.get_button_flow(player)
@@ -13,6 +15,14 @@ function kill_gui(player)
 	if frame_flow["new-game-plus-config-more-frame"] then
 		frame_flow["new-game-plus-config-more-frame"].destroy()
 	end
+end
+
+local function format_int(number)
+	return string.format("%.0f", tostring(number))
+end
+
+local function format_number(number)
+	return string.format("%f", tostring(number))
 end
 
 local function generate_resource_options(resource_name, config_resource_table, freq_options, size_options, richn_options)
@@ -48,8 +58,18 @@ local function make_advanced_settings_gui(config_more_frame)
 		name = "new-game-plus-config-more-flow",
 		direction = "vertical"
 	}
-	config_more_flow.style.max_on_row = 1
-	local config_more_option_table = config_more_flow.add{
+	config_more_flow.style.max_on_row = 2
+	local config_more_table = config_more_flow.add{
+		type = "table",
+		name = "new-game-plus-config-more-table",
+		colspan = 2
+	}
+	local config_more_option_flow = config_more_table.add{
+		type = "flow",
+		name = "new-game-plus-config-more-option-flow",
+		direction = "vertical"
+	}
+	local config_more_option_table = config_more_option_flow.add{
 		type = "table",
 		name = "new-game-plus-config-more-option-table",
 		colspan = 2
@@ -84,14 +104,14 @@ local function make_advanced_settings_gui(config_more_frame)
 		name = "new-game-plus-enemy-expansion-checkbox",
 		state = game.map_settings.enemy_expansion.enabled,
 	}
-	config_more_flow.add{
+	config_more_option_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.recipes-and-technology-group-tile"},
 		style = "caption_label_style",
 		name = "new-game-plus-difficulty-title-label",
 	}	
 	-- difficulty options
-	local config_more_option_difficulty_table = config_more_flow.add{
+	local config_more_option_difficulty_table = config_more_option_flow.add{
 		type = "table",
 		name = "new-game-plus-config-more-option-difficulty-table",
 		colspan = 2
@@ -130,6 +150,56 @@ local function make_advanced_settings_gui(config_more_frame)
 	}
 	technology_multiplier.text = tostring(game.difficulty_settings.technology_price_multiplier)
 	technology_multiplier.style.maximal_width = 50
+	local config_more_option_evo_flow = config_more_table.add{
+		type = "flow",
+		name = "new-game-plus-config-more-evo-flow",
+		direction = "vertical"
+	}
+	config_more_option_evo_flow.add{
+		type = "label",
+		caption = {"gui-map-generator.evolution"},
+		style = "caption_label_style",
+		name = "new-game-plus-evolution-title-label",
+	}
+	--evolution
+	local config_more_option_evo_table = config_more_option_evo_flow.add{
+		type = "table",
+		name = "new-game-plus-config-more-evo-table",
+		colspan = 2
+	}
+	config_more_option_evo_table.add{
+		type = "label",
+		caption = {"gui-map-generator.evolution-time-factor"},
+		name = "new-game-plus-evolution-time-label",
+	}
+	local evolution_time = config_more_option_evo_table.add{
+		type = "textfield",
+		name = "new-game-plus-evolution-time-textfield",
+	}
+	evolution_time.text = format_number(game.map_settings.enemy_evolution.time_factor)
+	evolution_time.style.maximal_width = 80
+	config_more_option_evo_table.add{
+		type = "label",
+		caption = {"gui-map-generator.evolution-destroy-factor"},
+		name = "new-game-plus-evolution-destroy-label",
+	}
+	local evolution_destroy = config_more_option_evo_table.add{
+		type = "textfield",
+		name = "new-game-plus-evolution-destroy-textfield",
+	}
+	evolution_destroy.text = format_number(game.map_settings.enemy_evolution.destroy_factor)
+	evolution_destroy.style.maximal_width = 80
+	config_more_option_evo_table.add{
+		type = "label",
+		caption = {"gui-map-generator.evolution-pollution-factor"},
+		name = "new-game-plus-evolution-pollution-label",
+	}
+	local evolution_pollution = config_more_option_evo_table.add{
+		type = "textfield",
+		name = "new-game-plus-evolution-pollution-textfield",
+	}
+	evolution_pollution.text = format_number(game.map_settings.enemy_evolution.pollution_factor)
+	evolution_pollution.style.maximal_width = 80
 end
 
 local function make_resource_settings_gui(config_frame)
@@ -241,6 +311,16 @@ local function make_basic_settings_gui(config_frame)
 	config_option_table.add{
 		type = "checkbox",
 		name = "new-game-plus-reset-research-checkbox",
+		state = false,
+	}
+	config_option_table.add{
+		type = "label",
+		name = "new-game-plus-reset-evo-label",
+		caption = {"gui.new-game-plus-reset-evo-caption"},
+	}
+	config_option_table.add{
+		type = "checkbox",
+		name = "new-game-plus-reset-evo-checkbox",
 		state = false,
 	}
 	config_option_table.add{
