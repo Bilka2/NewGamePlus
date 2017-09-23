@@ -1,7 +1,5 @@
 require("mod-gui")
 
--- TODO: add enemy expansion options
-
 -- GUI --
 function kill_gui(player)
 	local button_flow = mod_gui.get_button_flow(player)
@@ -21,7 +19,22 @@ local function format_number(number)
 	return string.format("%f", tostring(number))
 end
 
-local function make_expansion_settings_gui(config_more_table)
+local function make_config_option(parent, name, caption, default, max_width)
+	parent.add{
+		type = "label",
+		caption = caption,
+		name = "new-game-plus-" .. name .. "-label",
+	}
+	local child = parent.add{
+		type = "textfield",
+		name = "new-game-plus-" .. name .. "-textfield",
+	}
+	child.text = default
+	if max_width then child.style.maximal_width = max_width end
+	return child
+end
+
+local function make_expansion_settings_gui(config_more_table, map_settings)
 	local config_more_option_expansion_flow = config_more_table.add{
 		type = "flow",
 		name = "new-game-plus-config-more-expansion-flow",
@@ -47,11 +60,17 @@ local function make_expansion_settings_gui(config_more_table)
 	config_more_option_expansion_table.add{
 		type = "checkbox",
 		name = "new-game-plus-enemy-expansion-checkbox",
-		state = game.map_settings.enemy_expansion.enabled,
+		state = map_settings.enemy_expansion.enabled,
 	}
+	local thirty = 30
+	make_config_option(config_more_option_expansion_table, "expansion-distance", {"gui-map-generator.enemy-expansion-maximum-expansion-distance"}, tostring(map_settings.enemy_expansion.max_expansion_distance), thirty)
+	make_config_option(config_more_option_expansion_table, "expansion-min-size", {"gui-map-generator.enemy-expansion-minimum-expansion-group-size"}, tostring(map_settings.enemy_expansion.settler_group_min_size), thirty)
+	make_config_option(config_more_option_expansion_table, "expansion-max-size", {"gui-map-generator.enemy-expansion-maximum-expansion-group-size"}, tostring(map_settings.enemy_expansion.settler_group_max_size), thirty)
+	make_config_option(config_more_option_expansion_table, "expansion-min-cd", {"gui-map-generator.enemy-expansion-minimum-expansion-cooldown"}, tostring(map_settings.enemy_expansion.min_expansion_cooldown / 3600), thirty)
+	make_config_option(config_more_option_expansion_table, "expansion-max-cd", {"gui-map-generator.enemy-expansion-maximum-expansion-cooldown"}, tostring(map_settings.enemy_expansion.max_expansion_cooldown / 3600), thirty)
 end
 
-local function make_pollution_settings_gui(config_more_table)
+local function make_pollution_settings_gui(config_more_table, map_settings)
 	local config_more_option_pollution_flow = config_more_table.add{
 		type = "flow",
 		name = "new-game-plus-config-more-pollution-flow",
@@ -77,55 +96,15 @@ local function make_pollution_settings_gui(config_more_table)
 	config_more_option_pollution_table.add{
 		type = "checkbox",
 		name = "new-game-plus-pollution-checkbox",
-		state = game.map_settings.pollution.enabled,
+		state = map_settings.pollution.enabled,
 	}
-	config_more_option_pollution_table.add{
-		type = "label",
-		caption = {"gui-map-generator.pollution-diffusion-ratio"},
-		name = "new-game-plus-pollution-diffusion-label",
-	}
-	local pollution_diffusion = config_more_option_pollution_table.add{
-		type = "textfield",
-		name = "new-game-plus-pollution-diffusion-textfield",
-	}
-	pollution_diffusion.text = tostring(game.map_settings.pollution.diffusion_ratio)
-	pollution_diffusion.style.maximal_width = 50
-	config_more_option_pollution_table.add{
-		type = "label",
-		caption = {"gui-map-generator.pollution-dissipation-rate"},
-		name = "new-game-plus-pollution-dissipation-label",
-	}
-	local pollution_dissipation = config_more_option_pollution_table.add{
-		type = "textfield",
-		name = "new-game-plus-pollution-dissipation-textfield",
-	}
-	pollution_dissipation.text = tostring(game.map_settings.pollution.ageing)
-	pollution_dissipation.style.maximal_width = 50
-	config_more_option_pollution_table.add{
-		type = "label",
-		caption = {"gui-map-generator.minimum-pollution-to-damage-trees"},
-		name = "new-game-plus-pollution-tree-dmg-label",
-	}
-	local pollution_tree_dmg = config_more_option_pollution_table.add{
-		type = "textfield",
-		name = "new-game-plus-pollution-tree-dmg-textfield",
-	}
-	pollution_tree_dmg.text = tostring(game.map_settings.pollution.min_pollution_to_damage_trees)
-	pollution_tree_dmg.style.maximal_width = 50
-	config_more_option_pollution_table.add{
-		type = "label",
-		caption = {"gui-map-generator.pollution-absorbed-per-tree-damaged"},
-		name = "new-game-plus-pollution-tree-absorb-label",
-	}
-	local pollution_tree_absorb = config_more_option_pollution_table.add{
-		type = "textfield",
-		name = "new-game-plus-pollution-tree-absorb-textfield",
-	}
-	pollution_tree_absorb.text = tostring(game.map_settings.pollution.pollution_restored_per_tree_damage)
-	pollution_tree_absorb.style.maximal_width = 50
+	make_config_option(config_more_option_pollution_table, "pollution-diffusion", {"gui-map-generator.pollution-diffusion-ratio"}, tostring(map_settings.pollution.diffusion_ratio), 50)
+	make_config_option(config_more_option_pollution_table, "pollution-dissipation", {"gui-map-generator.pollution-dissipation-rate"}, tostring(map_settings.pollution.ageing), 50)
+	make_config_option(config_more_option_pollution_table, "pollution-tree-dmg", {"gui-map-generator.minimum-pollution-to-damage-trees"}, tostring(map_settings.pollution.min_pollution_to_damage_trees), 50)
+	make_config_option(config_more_option_pollution_table, "pollution-tree-absorb", {"gui-map-generator.pollution-absorbed-per-tree-damaged"}, tostring(map_settings.pollution.pollution_restored_per_tree_damage), 50)
 end
 
-local function make_evolution_settings_gui(config_more_table)
+local function make_evolution_settings_gui(config_more_table, map_settings)
 	local config_more_option_evo_flow = config_more_table.add{
 		type = "flow",
 		name = "new-game-plus-config-more-evo-flow",
@@ -151,47 +130,17 @@ local function make_evolution_settings_gui(config_more_table)
 	config_more_option_evo_table.add{
 		type = "checkbox",
 		name = "new-game-plus-evolution-checkbox",
-		state = game.map_settings.enemy_evolution.enabled,
+		state = map_settings.enemy_evolution.enabled,
 	}
-	config_more_option_evo_table.add{
-		type = "label",
-		caption = {"gui-map-generator.evolution-time-factor"},
-		name = "new-game-plus-evolution-time-label",
-	}
-	local evolution_time = config_more_option_evo_table.add{
-		type = "textfield",
-		name = "new-game-plus-evolution-time-textfield",
-	}
-	evolution_time.text = format_number(game.map_settings.enemy_evolution.time_factor)
-	evolution_time.style.maximal_width = 80
-	config_more_option_evo_table.add{
-		type = "label",
-		caption = {"gui-map-generator.evolution-destroy-factor"},
-		name = "new-game-plus-evolution-destroy-label",
-	}
-	local evolution_destroy = config_more_option_evo_table.add{
-		type = "textfield",
-		name = "new-game-plus-evolution-destroy-textfield",
-	}
-	evolution_destroy.text = format_number(game.map_settings.enemy_evolution.destroy_factor)
-	evolution_destroy.style.maximal_width = 80
-	config_more_option_evo_table.add{
-		type = "label",
-		caption = {"gui-map-generator.evolution-pollution-factor"},
-		name = "new-game-plus-evolution-pollution-label",
-	}
-	local evolution_pollution = config_more_option_evo_table.add{
-		type = "textfield",
-		name = "new-game-plus-evolution-pollution-textfield",
-	}
-	evolution_pollution.text = format_number(game.map_settings.enemy_evolution.pollution_factor)
-	evolution_pollution.style.maximal_width = 80
+	make_config_option(config_more_option_evo_table, "evolution-time", {"gui-map-generator.evolution-time-factor"}, format_number(map_settings.enemy_evolution.time_factor), 80)
+	make_config_option(config_more_option_evo_table, "evolution-destroy", {"gui-map-generator.evolution-destroy-factor"}, format_number(map_settings.enemy_evolution.destroy_factor), 80)
+	make_config_option(config_more_option_evo_table, "evolution-pollution", {"gui-map-generator.evolution-pollution-factor"}, format_number(map_settings.enemy_evolution.pollution_factor), 80)
 end
 
 local function make_difficulty_settings_gui(config_more_table)
 	local config_more_option_difficulty_flow = config_more_table.add{
 		type = "flow",
-		name = "new-game-plus-config-more-option-flow",
+		name = "new-game-plus-config-more-difficulty-flow",
 		direction = "vertical"
 	}
 	config_more_option_difficulty_flow.add{
@@ -202,7 +151,7 @@ local function make_difficulty_settings_gui(config_more_table)
 	}
 	local config_more_option_difficulty_table = config_more_option_difficulty_flow.add{
 		type = "table",
-		name = "new-game-plus-config-more-option-difficulty-table",
+		name = "new-game-plus-config-more-difficulty-table",
 		colspan = 2
 	}
 	
@@ -229,17 +178,7 @@ local function make_difficulty_settings_gui(config_more_table)
 	}
 	technology_difficulty.items = difficulty_options
 	technology_difficulty.selected_index = game.difficulty_settings.technology_difficulty + 1
-	config_more_option_difficulty_table.add{
-		type = "label",
-		caption = {"gui-map-generator.technology-price-multiplier"},
-		name = "new-game-plus-technology-multiplier-label",
-	}
-	local technology_multiplier = config_more_option_difficulty_table.add{
-		type = "textfield",
-		name = "new-game-plus-technology-multiplier-textfield",
-	}
-	technology_multiplier.text = tostring(game.difficulty_settings.technology_price_multiplier)
-	technology_multiplier.style.maximal_width = 50
+	make_config_option(config_more_option_difficulty_table, "technology-multiplier", {"gui-map-generator.technology-price-multiplier"}, tostring(game.difficulty_settings.technology_price_multiplier), 50)
 end
 
 local function make_advanced_settings_gui(config_more_frame)
@@ -248,11 +187,12 @@ local function make_advanced_settings_gui(config_more_frame)
 		name = "new-game-plus-config-more-table",
 		colspan = 2
 	}
+	local map_settings = game.map_settings
 	--make different advanced option groups
 	make_difficulty_settings_gui(config_more_table)
-	make_evolution_settings_gui(config_more_table)
-	make_pollution_settings_gui(config_more_table)
-	make_expansion_settings_gui(config_more_table)
+	make_evolution_settings_gui(config_more_table, map_settings)
+	make_pollution_settings_gui(config_more_table, map_settings)
+	make_expansion_settings_gui(config_more_table, map_settings)
 end
 
 local function generate_resource_options(resource_name, config_resource_table, freq_options, size_options, richn_options)
@@ -385,16 +325,6 @@ local function make_basic_settings_gui(config_frame)
 	}
 	config_option_table.add{
 		type = "label",
-		name = "new-game-plus-reset-research-label",
-		caption = {"gui.new-game-plus-reset-research-caption"},
-	}
-	config_option_table.add{
-		type = "checkbox",
-		name = "new-game-plus-reset-research-checkbox",
-		state = false,
-	}
-	config_option_table.add{
-		type = "label",
 		name = "new-game-plus-reset-evo-label",
 		caption = {"gui.new-game-plus-reset-evo-caption"},
 	}
@@ -403,6 +333,17 @@ local function make_basic_settings_gui(config_frame)
 		name = "new-game-plus-reset-evo-checkbox",
 		state = true,
 	}
+	config_option_table.add{
+		type = "label",
+		name = "new-game-plus-reset-research-label",
+		caption = {"gui.new-game-plus-reset-research-caption"},
+	}
+	config_option_table.add{
+		type = "checkbox",
+		name = "new-game-plus-reset-research-checkbox",
+		state = false,
+	}
+
 	config_option_table.add{
 		type = "label",
 		name = "new-game-plus-peaceful-mode-label",
