@@ -105,6 +105,7 @@ local function change_map_settings(player)
 	-- REDO ALL THE THINGS RELATION TO THE MORE GUI BECAUSE I CHANGED THE STRUCTURE YAY
 	-- Add all evo stuff
 	-- add pollution
+	-- add enemy expansion
 	
 	
 	
