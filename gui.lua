@@ -445,7 +445,7 @@ function regen_gui(player)
 		style = frame_caption_label_style
 	}
 	config_frame_title.style.font = "default-frame"
-	config_frame_title.style.right_padding = 10
+	config_frame_title.style.right_padding = 30
 	config_frame_title.style.bottom_padding = 5
 	config_frame_title_table.add{
 		type = "button",
