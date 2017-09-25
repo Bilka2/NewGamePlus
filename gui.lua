@@ -66,8 +66,8 @@ local function make_expansion_settings_gui(config_more_table, map_settings)
 	make_config_option(config_more_option_expansion_table, "expansion-distance", {"gui-map-generator.enemy-expansion-maximum-expansion-distance"}, tostring(map_settings.enemy_expansion.max_expansion_distance), thirty)
 	make_config_option(config_more_option_expansion_table, "expansion-min-size", {"gui-map-generator.enemy-expansion-minimum-expansion-group-size"}, tostring(map_settings.enemy_expansion.settler_group_min_size), thirty)
 	make_config_option(config_more_option_expansion_table, "expansion-max-size", {"gui-map-generator.enemy-expansion-maximum-expansion-group-size"}, tostring(map_settings.enemy_expansion.settler_group_max_size), thirty)
-	make_config_option(config_more_option_expansion_table, "expansion-min-cd", {"gui-map-generator.enemy-expansion-minimum-expansion-cooldown"}, tostring(map_settings.enemy_expansion.min_expansion_cooldown / 3600), thirty)
-	make_config_option(config_more_option_expansion_table, "expansion-max-cd", {"gui-map-generator.enemy-expansion-maximum-expansion-cooldown"}, tostring(map_settings.enemy_expansion.max_expansion_cooldown / 3600), thirty)
+	make_config_option(config_more_option_expansion_table, "expansion-min-cd", {"gui.new-game-plus-in-unit", {"gui-map-generator.enemy-expansion-minimum-expansion-cooldown"}, {"minute5+"}}, tostring(map_settings.enemy_expansion.min_expansion_cooldown / 3600), thirty)
+	make_config_option(config_more_option_expansion_table, "expansion-max-cd", {"gui.new-game-plus-in-unit", {"gui-map-generator.enemy-expansion-maximum-expansion-cooldown"}, {"minute5+"}}, tostring(map_settings.enemy_expansion.max_expansion_cooldown / 3600), thirty)
 end
 
 local function make_pollution_settings_gui(config_more_table, map_settings)
@@ -178,7 +178,17 @@ local function make_difficulty_settings_gui(config_more_table)
 	}
 	technology_difficulty.items = difficulty_options
 	technology_difficulty.selected_index = game.difficulty_settings.technology_difficulty + 1
-	make_config_option(config_more_option_difficulty_table, "technology-multiplier", {"gui-map-generator.technology-price-multiplier"}, tostring(game.difficulty_settings.technology_price_multiplier), 50)
+	config_more_option_difficulty_table.add{
+		type = "label",
+		caption = {"gui-map-generator.technology-price-multiplier"},
+		name = "new-game-plus-technology-multiplier-label",
+	}
+	local technology_multiplier = config_more_option_difficulty_table.add{
+		type = "textfield",
+		name = "new-game-plus-technology-multiplier-textfield",
+	}
+	technology_multiplier.text = tostring(game.difficulty_settings.technology_price_multiplier)
+	technology_multiplier.style.maximal_width = 50
 end
 
 local function make_advanced_settings_gui(config_more_frame)
@@ -343,7 +353,6 @@ local function make_basic_settings_gui(config_frame)
 		name = "new-game-plus-reset-research-checkbox",
 		state = false,
 	}
-
 	config_option_table.add{
 		type = "label",
 		name = "new-game-plus-peaceful-mode-label",

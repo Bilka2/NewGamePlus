@@ -72,7 +72,7 @@ end
 
 local function textfield_to_number(textfield)
 	local number = tonumber(textfield.text)
-	if textfield.text and number and (number >= 0) then
+	if textfield.text and number then
 		return number
 	else
 		return false
@@ -81,34 +81,132 @@ end
 
 local function change_map_settings(player)
 	local frame_flow = mod_gui.get_frame_flow(player)
-	local map_settings = game.map_settings
-	local config_more_options = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-flow"]["new-game-plus-config-more-option-table"]
-	map_settings.pollution.enabled = config_more_options["new-game-plus-pollution-checkbox"].state
-	map_settings.enemy_evolution.enabled = config_more_options["new-game-plus-evolution-checkbox"].state
-	map_settings.enemy_expansion.enabled = config_more_options["new-game-plus-enemy-expansion-checkbox"].state
-	
-	local config_more_options_difficulty = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-flow"]["new-game-plus-config-more-option-difficulty-table"]
-	game.difficulty_settings.recipe_difficulty = config_more_options_difficulty["new-game-plus-recipe-difficulty-drop-down"].selected_index - 1
-	game.difficulty_settings.technology_difficulty = config_more_options_difficulty["new-game-plus-technology-difficulty-drop-down"].selected_index - 1
-	local technology_price_multiplier = textfield_to_uint(config_more_options_difficulty["new-game-plus-technology-multiplier-textfield"])
-	if technology_price_multiplier and technology_price_multiplier > 0 and technology_price_multiplier <= 1000 then
-		game.difficulty_settings.technology_price_multiplier = technology_price_multiplier
-	elseif technology_price_multiplier and technology_price_multiplier > 1000 then
-		game.difficulty_settings.technology_price_multiplier = 1000
+	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
+	--Reset evolution
+	if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-evo-checkbox"].state then
+		for _, force in pairs(game.forces) do
+			force.evolution_factor = 0
+		end
+	end
+	--Difficulty
+	local difficulty_settings = game.difficulty_settings
+	local difficulty_table = more_config_table["new-game-plus-config-more-difficulty-flow"]["new-game-plus-config-more-difficulty-table"]
+	difficulty_settings.recipe_difficulty = difficulty_table["new-game-plus-recipe-difficulty-drop-down"].selected_index - 1
+	difficulty_settings.technology_difficulty = difficulty_table["new-game-plus-technology-difficulty-drop-down"].selected_index - 1
+	local technology_price_multiplier = textfield_to_uint(difficulty_table["new-game-plus-technology-multiplier-textfield"])
+	if technology_price_multiplier and (technology_price_multiplier > 0) and (technology_price_multiplier <= 1000) then
+		difficulty_settings.technology_price_multiplier = technology_price_multiplier
+	elseif technology_price_multiplier and (technology_price_multiplier > 0) and (technology_price_multiplier > 1000) then
+		difficulty_settings.technology_price_multiplier = 1000
 	else
-		player.print({"msg.new-game-plus-start-invalid-technology-multiplier"})
+		player.print({"msg.new-game-plus-invalid-technology-multiplier"})
 		return false
 	end
-
-	-- TODO --
-	-- new-game-plus-reset-evo-checkbox
-	-- REDO ALL THE THINGS RELATION TO THE MORE GUI BECAUSE I CHANGED THE STRUCTURE YAY
-	-- Add all evo stuff
-	-- add pollution
-	-- add enemy expansion
-	
-	
-	
+	-- MAP SETTINGS --
+	local map_settings = game.map_settings
+	--Evolution
+	local evo_table = more_config_table["new-game-plus-config-more-evo-flow"]["new-game-plus-config-more-evo-table"]
+	map_settings.enemy_evolution.enabled = evo_table["new-game-plus-evolution-checkbox"].state
+	local evolution_time = textfield_to_number(evo_table["new-game-plus-evolution-time-textfield"])
+	if evolution_time and (evolution_time >= 0) and (evolution_time <= 0.0001) then
+		map_settings.enemy_evolution.time_factor = evolution_time
+	else
+		player.print({"msg.new-game-plus-invalid-evolution-time"})
+		return false
+	end
+	local evolution_destroy = textfield_to_number(evo_table["new-game-plus-evolution-destroy-textfield"])
+	if evolution_destroy and (evolution_destroy >= 0) and (evolution_destroy <= 0.01) then
+		map_settings.enemy_evolution.destroy_factor = evolution_destroy
+	else
+		player.print({"msg.new-game-plus-invalid-evolution-destroy"})
+		return false
+	end
+	local evolution_pollution = textfield_to_number(evo_table["new-game-plus-evolution-pollution-textfield"])
+	if evolution_pollution and (evolution_pollution >= 0) and (evolution_pollution <= 0.0001) then
+		map_settings.enemy_evolution.pollution_factor = evolution_pollution
+	else
+		player.print({"msg.new-game-plus-invalid-evolution-pollution"})
+		return false
+	end
+	--Pollution
+	local pollution_table = more_config_table["new-game-plus-config-more-pollution-flow"]["new-game-plus-config-more-pollution-table"]
+	map_settings.pollution.enabled = pollution_table["new-game-plus-pollution-checkbox"].state
+	local pollution_diffusion = textfield_to_number(pollution_table["new-game-plus-pollution-diffusion-textfield"])
+	if pollution_diffusion and (pollution_diffusion >= 0) and (pollution_diffusion <= 0.25) then
+		map_settings.pollution.diffusion_ratio = pollution_diffusion
+	else
+		player.print({"msg.new-game-plus-invalid-pollution-diffusion"})
+		return false
+	end
+	local pollution_dissipation = textfield_to_uint(pollution_table["new-game-plus-pollution-dissipation-textfield"])
+	if pollution_dissipation and (pollution_dissipation > 0) and (pollution_dissipation <= 1000) then
+		map_settings.pollution.ageing = pollution_dissipation
+	else
+		player.print({"msg.new-game-plus-invalid-pollution-dissipation"})
+		return false
+	end
+	local pollution_tree_dmg = textfield_to_uint(pollution_table["new-game-plus-pollution-tree-dmg-textfield"])
+	if pollution_tree_dmg and (pollution_tree_dmg >= 0) and (pollution_tree_dmg <= 9999) then
+		map_settings.pollution.min_pollution_to_damage_trees = pollution_tree_dmg
+	else
+		player.print({"msg.new-game-plus-invalid-pollution-tree-dmg"})
+		return false
+	end
+	local pollution_tree_absorb = textfield_to_uint(pollution_table["new-game-plus-pollution-tree-absorb-textfield"])
+	if pollution_tree_absorb and (pollution_tree_absorb >= 0) and (pollution_tree_absorb <= 9999) then
+		map_settings.pollution.pollution_restored_per_tree_damage = pollution_tree_absorb
+	else
+		player.print({"msg.new-game-plus-invalid-pollution-tree-absorb"})
+		return false
+	end
+	--Enemy expansion
+	local expansion_table = more_config_table["new-game-plus-config-more-expansion-flow"]["new-game-plus-config-more-expansion-table"]
+	map_settings.enemy_expansion.enabled = expansion_table["new-game-plus-enemy-expansion-checkbox"].state
+	local expansion_distance = textfield_to_uint(expansion_table["new-game-plus-expansion-distance-textfield"])
+	if expansion_distance and (expansion_distance >= 2) and (expansion_distance <= 20) then
+		map_settings.enemy_expansion.max_expansion_distance = expansion_distance
+	else
+		player.print({"msg.new-game-plus-invalid-expansion-distance"})
+		return false
+	end
+	local expansion_min_size = textfield_to_uint(expansion_table["new-game-plus-expansion-min-size-textfield"])
+	if expansion_min_size and (expansion_min_size >= 1) and (expansion_min_size <= 20) then
+		map_settings.enemy_expansion.settler_group_min_size = expansion_min_size
+	else
+		player.print({"msg.new-game-plus-invalid-expansion-min-size"})
+		return false
+	end
+	local expansion_max_size = textfield_to_uint(expansion_table["new-game-plus-expansion-max-size-textfield"])
+	if expansion_max_size and (expansion_max_size >= 1) and (expansion_max_size <= 50) then
+		if expansion_max_size < map_settings.enemy_expansion.settler_group_min_size then
+			player.print({"msg.new-game-plus-too-low-expansion-max-size"})
+			return false
+		else
+			map_settings.enemy_expansion.settler_group_max_size = expansion_max_size
+		end
+	else
+		player.print({"msg.new-game-plus-invalid-expansion-max-size"})
+		return false
+	end
+	local expansion_min_cd = textfield_to_uint(expansion_table["new-game-plus-expansion-min-cd-textfield"])
+	if expansion_min_cd and (expansion_min_cd >= 1) and (expansion_min_cd <= 60) then
+		map_settings.enemy_expansion.min_expansion_cooldown = expansion_min_cd * 3600
+	else
+		player.print({"msg.new-game-plus-invalid-expansion-min-cd"})
+		return false
+	end
+	local expansion_max_cd = textfield_to_uint(expansion_table["new-game-plus-expansion-max-cd-textfield"])
+	if expansion_max_cd and (expansion_max_cd >= 5) and (expansion_max_cd <= 180) then
+		if expansion_max_cd < (map_settings.enemy_expansion.min_expansion_cooldown / 3600) then
+			player.print({"msg.new-game-plus-too-low-expansion-max-cd"})
+			return false
+		else
+			map_settings.enemy_expansion.max_expansion_cooldown = expansion_max_cd * 3600
+		end
+	else
+		player.print({"msg.new-game-plus-invalid-expansion-max-cd"})
+		return false
+	end	
 	return true
 end
 
@@ -236,7 +334,7 @@ local function generate_new_world(player)
 				end
 				surface.delete_chunk({chunk.x, chunk.y})
 			end
-		elseif not surface.name:find("Factory floor") and surface.name ~= "Nauvis plus " .. global.next_nauvis_number then --don't delete factorissimo stuff or the new surface
+		elseif not surface.name:find("Factory floor") and (surface.name ~= "Nauvis plus " .. global.next_nauvis_number) then --don't delete factorissimo stuff or the new surface
 			game.delete_surface(surface)
 		end
 	end
@@ -297,7 +395,7 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
 					end
 				end
 			end
-			if global.use_rso then
+			if global.use_rso then --doing this here because otherwise ores may spawn on water
 				debug_log("Using RSO ore generation")
 				remote.call("RSO", "resetGeneration", surface)
 				remote.call("RSO", "regenerate", false)
