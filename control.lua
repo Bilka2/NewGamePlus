@@ -131,9 +131,9 @@ local function change_map_settings(player)
 	--Pollution
 	local pollution_table = more_config_table["new-game-plus-config-more-pollution-flow"]["new-game-plus-config-more-pollution-table"]
 	map_settings.pollution.enabled = pollution_table["new-game-plus-pollution-checkbox"].state
-	local pollution_diffusion = textfield_to_number(pollution_table["new-game-plus-pollution-diffusion-textfield"])
-	if pollution_diffusion and (pollution_diffusion >= 0) and (pollution_diffusion <= 0.25) then
-		map_settings.pollution.diffusion_ratio = pollution_diffusion
+	local pollution_diffusion = textfield_to_uint(pollution_table["new-game-plus-pollution-diffusion-textfield"])
+	if pollution_diffusion and (pollution_diffusion >= 0) and (pollution_diffusion <= 25) then
+		map_settings.pollution.diffusion_ratio = (pollution_diffusion / 100)
 	else
 		player.print({"msg.new-game-plus-invalid-pollution-diffusion"})
 		return false
@@ -190,7 +190,7 @@ local function change_map_settings(player)
 	end
 	local expansion_min_cd = textfield_to_uint(expansion_table["new-game-plus-expansion-min-cd-textfield"])
 	if expansion_min_cd and (expansion_min_cd >= 1) and (expansion_min_cd <= 60) then
-		map_settings.enemy_expansion.min_expansion_cooldown = expansion_min_cd * 3600
+		map_settings.enemy_expansion.min_expansion_cooldown = (expansion_min_cd * 3600)
 	else
 		player.print({"msg.new-game-plus-invalid-expansion-min-cd"})
 		return false
@@ -201,7 +201,7 @@ local function change_map_settings(player)
 			player.print({"msg.new-game-plus-too-low-expansion-max-cd"})
 			return false
 		else
-			map_settings.enemy_expansion.max_expansion_cooldown = expansion_max_cd * 3600
+			map_settings.enemy_expansion.max_expansion_cooldown = (expansion_max_cd * 3600)
 		end
 	else
 		player.print({"msg.new-game-plus-invalid-expansion-max-cd"})
