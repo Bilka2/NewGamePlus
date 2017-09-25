@@ -19,7 +19,6 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 end)
 
 local function use_current_map_gen(player)
-	-- TODO: Add map_settings here
 	local frame_flow = mod_gui.get_frame_flow(player)
 	local surface = player.surface
 	local map_gen_settings = surface.map_gen_settings
@@ -27,8 +26,9 @@ local function use_current_map_gen(player)
 	local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
 	config_options["new-game-plus-peaceful-mode-checkbox"].state = map_gen_settings.peaceful_mode
 	config_options["new-game-plus-seed-textfield"].text = tostring(map_gen_settings.seed)
-	config_options["new-game-plus-width-textfield"].text = tostring(map_gen_settings.width)
-	config_options["new-game-plus-height-textfield"].text = tostring(map_gen_settings.height)
+	config_options["new-game-plus-width-textfield"].text = tostring(map_gen_settings.width == 2000000 and 0 or map_gen_settings.width) --show 0 if it was set to "infinite"
+	config_options["new-game-plus-height-textfield"].text = tostring(map_gen_settings.height == 2000000 and 0 or map_gen_settings.height)
+	-- MAP GEN SETTINGS --
 	-- resource table --
 	local resource_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-resource-table"]
 	local none_lookup = {
@@ -58,6 +58,36 @@ local function use_current_map_gen(player)
 		resource_table["new-game-plus-config-" .. resource .. "-size"].selected_index = none_lookup[tbl["size"]]
 		resource_table["new-game-plus-config-" .. resource .. "-richn"].selected_index = lookup[tbl["richness"]]
 	end
+	-- DIFFICULTY SETTINGS --
+	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
+	local difficulty_settings = game.difficulty_settings
+	local difficulty_table = more_config_table["new-game-plus-config-more-difficulty-flow"]["new-game-plus-config-more-difficulty-table"]
+	difficulty_table["new-game-plus-recipe-difficulty-drop-down"].selected_index  = difficulty_settings.recipe_difficulty + 1
+	difficulty_table["new-game-plus-technology-difficulty-drop-down"].selected_index = difficulty_settings.technology_difficulty + 1
+	difficulty_table["new-game-plus-technology-multiplier-textfield"].text = tostring(difficulty_settings.technology_price_multiplier)
+	-- MAP SETTINGS --
+	local map_settings = game.map_settings
+	--Evolution
+	local evo_table = more_config_table["new-game-plus-config-more-evo-flow"]["new-game-plus-config-more-evo-table"]
+	evo_table["new-game-plus-evolution-checkbox"].state = map_settings.enemy_evolution.enabled
+	evo_table["new-game-plus-evolution-time-textfield"].text = format_number(map_settings.enemy_evolution.time_factor)
+	evo_table["new-game-plus-evolution-destroy-textfield"].text = format_number(map_settings.enemy_evolution.destroy_factor)
+	evo_table["new-game-plus-evolution-pollution-textfield"].text = format_number(map_settings.enemy_evolution.pollution_factor)
+	--Pollution
+	local pollution_table = more_config_table["new-game-plus-config-more-pollution-flow"]["new-game-plus-config-more-pollution-table"]
+	pollution_table["new-game-plus-pollution-checkbox"].state = map_settings.pollution.enabled
+	pollution_table["new-game-plus-pollution-diffusion-textfield"].text = tostring(map_settings.pollution.diffusion_ratio * 100)
+	pollution_table["new-game-plus-pollution-dissipation-textfield"].text = tostring(map_settings.pollution.ageing)
+	pollution_table["new-game-plus-pollution-tree-dmg-textfield"].text = tostring(map_settings.pollution.min_pollution_to_damage_trees)
+	pollution_table["new-game-plus-pollution-tree-absorb-textfield"].text = tostring(map_settings.pollution.pollution_restored_per_tree_damage)
+	--Enemy expansion
+	local expansion_table = more_config_table["new-game-plus-config-more-expansion-flow"]["new-game-plus-config-more-expansion-table"]
+	expansion_table["new-game-plus-enemy-expansion-checkbox"].state = map_settings.enemy_expansion.enabled
+	expansion_table["new-game-plus-expansion-distance-textfield"].text = tostring(map_settings.enemy_expansion.max_expansion_distance)
+	expansion_table["new-game-plus-expansion-min-size-textfield"].text = tostring(map_settings.enemy_expansion.settler_group_min_size)
+	expansion_table["new-game-plus-expansion-max-size-textfield"].text = tostring(map_settings.enemy_expansion.settler_group_max_size)
+	expansion_table["new-game-plus-expansion-min-cd-textfield"].text = tostring(map_settings.enemy_expansion.min_expansion_cooldown / 3600)
+	expansion_table["new-game-plus-expansion-max-cd-textfield"].text = tostring(map_settings.enemy_expansion.max_expansion_cooldown / 3600)
 end
 
 -- WOLRD GEN --

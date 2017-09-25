@@ -15,7 +15,7 @@ function kill_gui(player)
 	end
 end
 
-local function format_number(number)
+function format_number(number)
 	return string.format("%f", tostring(number))
 end
 
