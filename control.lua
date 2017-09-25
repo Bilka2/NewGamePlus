@@ -18,6 +18,63 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 	end
 end)
 
+local function reset_to_default(player)
+	local frame_flow = mod_gui.get_frame_flow(player)
+	-- general options --
+	local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
+	config_options["new-game-plus-peaceful-mode-checkbox"].state = false
+	config_options["new-game-plus-seed-textfield"].text = 0
+	config_options["new-game-plus-width-textfield"].text = 0
+	config_options["new-game-plus-height-textfield"].text = 0
+	-- MAP GEN SETTINGS --
+	-- resource table --
+	local resource_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-resource-table"]
+	--water stuff
+	resource_table["new-game-plus-config-water-freq"].selected_index = 3
+	resource_table["new-game-plus-config-water-size"].selected_index = 4
+	--starting area
+	resource_table["new-game-plus-config-starting-area-size"].selected_index = 3
+	-- resources
+	for _, resource in pairs(game.entity_prototypes) do
+		if resource.type == "resource" and resource.autoplace_specification and resource.name ~= "lithia-water" then
+			resource_table["new-game-plus-config-" .. resource.name .. "-freq"].selected_index = 3
+			resource_table["new-game-plus-config-" .. resource.name .. "-size"].selected_index = 4
+			resource_table["new-game-plus-config-" .. resource.name .. "-richn"].selected_index = 3
+		end
+	end
+	resource_table["new-game-plus-config-enemy-base-freq"].selected_index = 3
+	resource_table["new-game-plus-config-enemy-base-size"].selected_index = 4
+	resource_table["new-game-plus-config-enemy-base-richn"].selected_index = 3
+	-- DIFFICULTY SETTINGS --
+	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
+	local difficulty_table = more_config_table["new-game-plus-config-more-difficulty-flow"]["new-game-plus-config-more-difficulty-table"]
+	difficulty_table["new-game-plus-recipe-difficulty-drop-down"].selected_index  = 1
+	difficulty_table["new-game-plus-technology-difficulty-drop-down"].selected_index = 1
+	difficulty_table["new-game-plus-technology-multiplier-textfield"].text = "1"
+	-- MAP SETTINGS --
+	--Evolution
+	local evo_table = more_config_table["new-game-plus-config-more-evo-flow"]["new-game-plus-config-more-evo-table"]
+	evo_table["new-game-plus-evolution-checkbox"].state = true
+	evo_table["new-game-plus-evolution-time-textfield"].text = "0.000004"
+	evo_table["new-game-plus-evolution-destroy-textfield"].text = "0.002000"
+	evo_table["new-game-plus-evolution-pollution-textfield"].text = "0.000015"
+	--Pollution
+	local pollution_table = more_config_table["new-game-plus-config-more-pollution-flow"]["new-game-plus-config-more-pollution-table"]
+	pollution_table["new-game-plus-pollution-checkbox"].state = true
+	pollution_table["new-game-plus-pollution-diffusion-textfield"].text = "2"
+	pollution_table["new-game-plus-pollution-dissipation-textfield"].text = "1"
+	pollution_table["new-game-plus-pollution-tree-dmg-textfield"].text = "3500"
+	pollution_table["new-game-plus-pollution-tree-absorb-textfield"].text = "500"
+	--Enemy expansion
+	local expansion_table = more_config_table["new-game-plus-config-more-expansion-flow"]["new-game-plus-config-more-expansion-table"]
+	expansion_table["new-game-plus-enemy-expansion-checkbox"].state = true
+	expansion_table["new-game-plus-expansion-distance-textfield"].text = "7"
+	expansion_table["new-game-plus-expansion-min-size-textfield"].text = "5"
+	expansion_table["new-game-plus-expansion-max-size-textfield"].text = "20"
+	expansion_table["new-game-plus-expansion-min-cd-textfield"].text = "4"
+	expansion_table["new-game-plus-expansion-max-cd-textfield"].text = "60"
+end
+
 local function use_current_map_gen(player)
 	local frame_flow = mod_gui.get_frame_flow(player)
 	local surface = player.surface
@@ -390,6 +447,8 @@ script.on_event({defines.events.on_gui_click}, function(event)
 			return
 		end
 		generate_new_world(player)
+	elseif clicked_name == "new-game-plus-default-button" then
+		reset_to_default(player)
 	end
 end)
 

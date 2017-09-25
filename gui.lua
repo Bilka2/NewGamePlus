@@ -394,11 +394,22 @@ local function make_basic_settings_gui(config_frame)
 		name = "new-game-plus-height-textfield",
 	}
 	height_textfield.text = "0"
-	config_frame.add{
+	local button_table = config_frame.add{
+		type = "table",
+		name = "new-game-plus-config-button-table",
+		colspan = 2
+	}
+	button_table.add{
 		type = "button",
 		name = "new-game-plus-use-current-button",
 		style = mod_gui.button_style,
 		caption = {"gui.new-game-plus-use-current-button-caption"}
+	}
+	button_table.add{
+		type = "button",
+		name = "new-game-plus-default-button",
+		style = mod_gui.button_style,
+		caption = {"gui.new-game-plus-default-button-caption"}
 	}
 end
 
@@ -435,7 +446,7 @@ function regen_gui(player)
 	}
 	config_frame_title.style.font = "default-frame"
 	config_frame_title.style.right_padding = 10
-	config_frame_title.style.bottom_padding = 15
+	config_frame_title.style.bottom_padding = 5
 	config_frame_title_table.add{
 		type = "button",
 		name = "new-game-plus-more-options",
@@ -450,12 +461,13 @@ function regen_gui(player)
 		direction = "vertical"
 	}
 	config_more_frame.style.visible = false
+	config_more_frame.style.title_bottom_padding = 8
 	
 	--make gui sections
 	make_basic_settings_gui(config_frame)
 	make_resource_settings_gui(config_frame)
 	make_advanced_settings_gui(config_more_frame)
-	
+
 	-- start button at the bottom
 	local start_button = config_frame.add{
 		type = "button",
