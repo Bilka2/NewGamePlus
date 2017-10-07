@@ -10,6 +10,11 @@ Works with mods that add ores or terrain etc. If you want to generate a new worl
 
 Changelog:
 
+1.1.1
+
+* Added support for the building platform mod
+* Minor code cleanup
+
 1.1.0
 
 * Added all advanced settings that can be found in the map generation GUI to the advanced settings
