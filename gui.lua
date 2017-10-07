@@ -1,4 +1,4 @@
-require("mod-gui")
+local mod_gui = require("mod-gui")
 
 -- GUI --
 function kill_gui(player)
@@ -23,12 +23,11 @@ local function make_config_option(parent, name, caption, tooltip, default, max_w
 	parent.add{
 		type = "label",
 		caption = caption,
-		tooltip = tooltip,
-		name = "new-game-plus-" .. name .. "-label",
+		tooltip = tooltip
 	}
 	local child = parent.add{
 		type = "textfield",
-		name = "new-game-plus-" .. name .. "-textfield",
+		name = "new-game-plus-" .. name .. "-textfield"
 	}
 	child.text = default
 	if max_width then child.style.maximal_width = max_width end
@@ -44,8 +43,7 @@ local function make_expansion_settings_gui(config_more_table, map_settings)
 	config_more_option_expansion_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.enemy-expansion-group-tile"},
-		style = "caption_label_style",
-		name = "new-game-plus-expansion-title-label",
+		style = "caption_label_style"
 	}
 	local config_more_option_expansion_table = config_more_option_expansion_flow.add{
 		type = "table",
@@ -56,7 +54,6 @@ local function make_expansion_settings_gui(config_more_table, map_settings)
 	config_more_option_expansion_table.add{
 		type = "label",
 		caption = {"gui-map-generator.enemy-expansion-group-tile"},
-		name = "new-game-plus-enemy-expansion-label",
 	}
 	config_more_option_expansion_table.add{
 		type = "checkbox",
@@ -80,8 +77,7 @@ local function make_pollution_settings_gui(config_more_table, map_settings)
 	config_more_option_pollution_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.pollution"},
-		style = "caption_label_style",
-		name = "new-game-plus-pollution-title-label",
+		style = "caption_label_style"
 	}
 	local config_more_option_pollution_table = config_more_option_pollution_flow.add{
 		type = "table",
@@ -91,8 +87,7 @@ local function make_pollution_settings_gui(config_more_table, map_settings)
 	
 	config_more_option_pollution_table.add{
 		type = "label",
-		caption = {"gui-map-generator.pollution"},
-		name = "new-game-plus-pollution-label",
+		caption = {"gui-map-generator.pollution"}
 	}
 	config_more_option_pollution_table.add{
 		type = "checkbox",
@@ -114,8 +109,7 @@ local function make_evolution_settings_gui(config_more_table, map_settings)
 	config_more_option_evo_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.evolution"},
-		style = "caption_label_style",
-		name = "new-game-plus-evolution-title-label",
+		style = "caption_label_style"
 	}
 	local config_more_option_evo_table = config_more_option_evo_flow.add{
 		type = "table",
@@ -125,8 +119,7 @@ local function make_evolution_settings_gui(config_more_table, map_settings)
 	
 	config_more_option_evo_table.add{
 		type = "label",
-		caption = {"gui-map-generator.evolution"},
-		name = "new-game-plus-pollution-enabled-label",
+		caption = {"gui-map-generator.evolution"}
 	}
 	config_more_option_evo_table.add{
 		type = "checkbox",
@@ -147,8 +140,7 @@ local function make_difficulty_settings_gui(config_more_table)
 	config_more_option_difficulty_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.recipes-and-technology-group-tile"},
-		style = "caption_label_style",
-		name = "new-game-plus-difficulty-title-label",
+		style = "caption_label_style"
 	}
 	local config_more_option_difficulty_table = config_more_option_difficulty_flow.add{
 		type = "table",
@@ -159,8 +151,7 @@ local function make_difficulty_settings_gui(config_more_table)
 	local difficulty_options = {{"recipe-difficulty.normal"}, {"recipe-difficulty.expensive"}}
 	config_more_option_difficulty_table.add{
 		type = "label",
-		caption = {"gui-map-generator.recipe-difficulty"},
-		name = "new-game-plus-recipe-difficulty-label",
+		caption = {"gui-map-generator.recipe-difficulty"}
 	}
 	local recipe_difficulty = config_more_option_difficulty_table.add{
 		type = "drop-down",
@@ -170,8 +161,7 @@ local function make_difficulty_settings_gui(config_more_table)
 	recipe_difficulty.selected_index = game.difficulty_settings.recipe_difficulty + 1
 	config_more_option_difficulty_table.add{
 		type = "label",
-		caption = {"gui-map-generator.technology-difficulty"},
-		name = "new-game-plus-technology-difficulty-label",
+		caption = {"gui-map-generator.technology-difficulty"}
 	}
 	local technology_difficulty = config_more_option_difficulty_table.add{
 		type = "drop-down",
@@ -181,8 +171,7 @@ local function make_difficulty_settings_gui(config_more_table)
 	technology_difficulty.selected_index = game.difficulty_settings.technology_difficulty + 1
 	config_more_option_difficulty_table.add{
 		type = "label",
-		caption = {"gui-map-generator.technology-price-multiplier"},
-		name = "new-game-plus-technology-multiplier-label",
+		caption = {"gui-map-generator.technology-price-multiplier"}
 	}
 	local technology_multiplier = config_more_option_difficulty_table.add{
 		type = "textfield",
@@ -210,8 +199,7 @@ local function generate_resource_options(resource_name, config_resource_table, f
 	if resource_name == "lithia-water" then return end --belongs to ground-water autoplace control (bob's mod)
 	config_resource_table.add{
 		type = "label",
-		caption = {"autoplace-control-names." .. resource_name},
-		name = "new-game-plus-config-" .. resource_name .. "-label",
+		caption = {"autoplace-control-names." .. resource_name}
 	}
 	local resource_freq = config_resource_table.add{
 		type = "drop-down",
@@ -247,26 +235,22 @@ local function make_resource_settings_gui(config_frame)
 	}
 	config_resource_table.add{
 		type = "label",
-		caption = " ",
-		name = "new-game-plus-config-resource-empty-label",
+		caption = " "
 	}
 	config_resource_table.add{
 		type = "label",
 		caption = {"gui-map-generator.frequency"},
-		style = "caption_label_style",
-		name = "new-game-plus-config-resource-freq-label",
+		style = "caption_label_style"
 	}
 	config_resource_table.add{
 		type = "label",
 		caption = {"gui-map-generator.size"},
-		style = "caption_label_style",
-		name = "new-game-plus-config-resource-size-label",
+		style = "caption_label_style"
 	}
 	config_resource_table.add{
 		type = "label",
 		caption = {"gui-map-generator.richness"},
-		style = "caption_label_style",
-		name = "new-game-plus-config-resource-richn-label",
+		style = "caption_label_style"
 	}
 	local freq_options = {{"frequency.very-low"}, {"frequency.low"}, {"frequency.normal"}, {"frequency.high"}, {"frequency.very-high"}}
 	local size_options = {{"size.none"}, {"size.very-low"}, {"size.low"}, {"size.normal"}, {"size.high"}, {"size.very-high"}}
@@ -274,46 +258,63 @@ local function make_resource_settings_gui(config_frame)
 	--water stuff
 	config_resource_table.add{
 		type = "label",
-		caption = {"gui-map-generator.water"},
-		name = "new-game-plus-config-water-label",
+		caption = {"gui-map-generator.water"}
 	}
-	local resource_freq = config_resource_table.add{ --terrain segmentation
+	local water_freq = config_resource_table.add{ --terrain segmentation
 		type = "drop-down",
 		name = "new-game-plus-config-water-freq",
 	}
-	resource_freq.items = freq_options
-	resource_freq.selected_index = 3
-	local resource_size = config_resource_table.add{  --"water" in the map gen settings
+	water_freq.items = freq_options
+	water_freq.selected_index = 3
+	local water_size = config_resource_table.add{  --"water" in the map gen settings
 		type = "drop-down",
 		name = "new-game-plus-config-water-size",
 	}
-	resource_size.items = size_options --first option should actually be size.only-starting-area but that localized string is waaaay too long
-	resource_size.selected_index = 4
+	water_size.items = size_options --first option should actually be size.only-starting-area but that localized string is waaaay too long
+	water_size.selected_index = 4
 	config_resource_table.add{
 		type = "label",
-		caption = " ",
-		name = "new-game-plus-config-resource-empty-label-2",
+		caption = " "
 	}
-	--biters
-	if game.entity_prototypes["biter-spawner"] and game.entity_prototypes["biter-spawner"].autoplace_specification and game.entity_prototypes["spitter-spawner"] and game.entity_prototypes["spitter-spawner"].autoplace_specification then
-		generate_resource_options("enemy-base", config_resource_table, freq_options, size_options, richn_options)
-	end
 	--resources
 	for _, resource in pairs(game.entity_prototypes) do
 		if resource.type == "resource" and resource.autoplace_specification then
 			generate_resource_options(resource.name, config_resource_table, freq_options, size_options, richn_options)
 		end
 	end
-	--starting area
+	--building platform mod
 	config_resource_table.add{
 		type = "label",
-		caption = {"gui-map-generator.starting-area"},
-		name = "new-game-plus-config-starting-area-label",
+		caption = {"autoplace-control-names.building-platform"}
 	}
+	local bp_freq = config_resource_table.add{
+		type = "drop-down",
+		name = "new-game-plus-config-building-platform-freq",
+	}
+	bp_freq.items = freq_options
+	bp_freq.selected_index = 3
+	local bp_size = config_resource_table.add{
+		type = "drop-down",
+		name = "new-game-plus-config-building-platform-size",
+	}
+	bp_size.items = size_options
+	bp_size.selected_index = 4
 	config_resource_table.add{
 		type = "label",
 		caption = " ",
-		name = "new-game-plus-config-resource-empty-label-3",
+	}
+	--biters
+	if game.entity_prototypes["biter-spawner"] and game.entity_prototypes["biter-spawner"].autoplace_specification and game.entity_prototypes["spitter-spawner"] and game.entity_prototypes["spitter-spawner"].autoplace_specification then
+		generate_resource_options("enemy-base", config_resource_table, freq_options, size_options, richn_options)
+	end
+	--starting area
+	config_resource_table.add{
+		type = "label",
+		caption = {"gui-map-generator.starting-area"}
+	}
+	config_resource_table.add{
+		type = "label",
+		caption = " "
 	}
 	local starting_area_size = config_resource_table.add{
 		type = "drop-down",
@@ -324,7 +325,6 @@ local function make_resource_settings_gui(config_frame)
 	config_resource_table.add{
 		type = "label",
 		caption = " ",
-		name = "new-game-plus-config-resource-empty-label-4",
 	}
 end
 
@@ -336,62 +336,56 @@ local function make_basic_settings_gui(config_frame)
 	}
 	config_option_table.add{
 		type = "label",
-		name = "new-game-plus-reset-evo-label",
-		caption = {"gui.new-game-plus-reset-evo-caption"},
+		caption = {"gui.new-game-plus-reset-evo-caption"}
 	}
 	config_option_table.add{
 		type = "checkbox",
 		name = "new-game-plus-reset-evo-checkbox",
-		state = true,
+		state = true
 	}
 	config_option_table.add{
 		type = "label",
-		name = "new-game-plus-reset-research-label",
-		caption = {"gui.new-game-plus-reset-research-caption"},
+		caption = {"gui.new-game-plus-reset-research-caption"}
 	}
 	config_option_table.add{
 		type = "checkbox",
 		name = "new-game-plus-reset-research-checkbox",
-		state = false,
+		state = false
 	}
 	config_option_table.add{
 		type = "label",
-		name = "new-game-plus-peaceful-mode-label",
-		caption = {"gui-map-generator.peaceful-mode"},
+		caption = {"gui-map-generator.peaceful-mode"}
 	}
 	config_option_table.add{
 		type = "checkbox",
 		name = "new-game-plus-peaceful-mode-checkbox",
-		state = false,
+		state = false
 	}
 	config_option_table.add{
 		type = "label",
-		name = "new-game-plus-seed-label",
-		caption = {"gui.new-game-plus-seed-caption"},
+		caption = {"gui.new-game-plus-seed-caption"}
 	}
 	local seed_textfield = config_option_table.add{
 		type = "textfield",
-		name = "new-game-plus-seed-textfield",
+		name = "new-game-plus-seed-textfield"
 	}
 	seed_textfield.text = "0"
 	config_option_table.add{
 		type = "label",
-		name = "new-game-plus-width-label",
-		caption = {"gui.new-game-plus-width-caption"},
+		caption = {"gui.new-game-plus-width-caption"}
 	}
 	local width_textfield = config_option_table.add{
 		type = "textfield",
-		name = "new-game-plus-width-textfield",
+		name = "new-game-plus-width-textfield"
 	}
 	width_textfield.text = "0"
 	config_option_table.add{
 		type = "label",
-		name = "new-game-plus-height-label",
-		caption = {"gui.new-game-plus-height-caption"},
+		caption = {"gui.new-game-plus-height-caption"}
 	}
 	local height_textfield = config_option_table.add{
 		type = "textfield",
-		name = "new-game-plus-height-textfield",
+		name = "new-game-plus-height-textfield"
 	}
 	height_textfield.text = "0"
 	local button_table = config_frame.add{

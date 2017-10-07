@@ -1,6 +1,6 @@
-require("mod-gui")
+local mod_gui = require("mod-gui")
 require("gui")
-DEBUG_MODE = true
+local DEBUG_MODE = true
 
 local function debug_log(msg)
 	if DEBUG_MODE then
@@ -22,6 +22,7 @@ local function reset_to_default(player)
 	local frame_flow = mod_gui.get_frame_flow(player)
 	-- general options --
 	local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
+	config_options["new-game-plus-reset-evo-checkbox"].state = true
 	config_options["new-game-plus-peaceful-mode-checkbox"].state = false
 	config_options["new-game-plus-seed-textfield"].text = 0
 	config_options["new-game-plus-width-textfield"].text = 0
@@ -41,6 +42,11 @@ local function reset_to_default(player)
 			resource_table["new-game-plus-config-" .. resource.name .. "-size"].selected_index = 4
 			resource_table["new-game-plus-config-" .. resource.name .. "-richn"].selected_index = 3
 		end
+	end
+	--building platform mod
+	if game.active_mods["building-platform"] and settings.startup["bp-platform-generator"].value == "default" and game.tile_prototypes["building-platform"] and game.tile_prototypes["building-platform"].autoplace_specification then
+		resource_table["new-game-plus-config-building-platform-freq"].selected_index = 3
+		resource_table["new-game-plus-config-building-platform-size"].selected_index = 4
 	end
 	resource_table["new-game-plus-config-enemy-base-freq"].selected_index = 3
 	resource_table["new-game-plus-config-enemy-base-size"].selected_index = 4
@@ -113,7 +119,9 @@ local function use_current_map_gen(player)
 	for resource, tbl in pairs(autoplace_controls) do
 		resource_table["new-game-plus-config-" .. resource .. "-freq"].selected_index = lookup[tbl["frequency"]]
 		resource_table["new-game-plus-config-" .. resource .. "-size"].selected_index = none_lookup[tbl["size"]]
-		resource_table["new-game-plus-config-" .. resource .. "-richn"].selected_index = lookup[tbl["richness"]]
+		if resource ~= "building-platform" then --building platforms dont have richness
+			resource_table["new-game-plus-config-" .. resource .. "-richn"].selected_index = lookup[tbl["richness"]]
+		end
 	end
 	-- DIFFICULTY SETTINGS --
 	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
@@ -293,7 +301,7 @@ local function change_map_settings(player)
 	else
 		player.print({"msg.new-game-plus-invalid-expansion-max-cd"})
 		return false
-	end	
+	end
 	return true
 end
 
@@ -307,7 +315,7 @@ local function make_map_gen_settings(player)
 		map_gen_settings.seed = math.random(0, 4294967295)
 	elseif seed then
 		map_gen_settings.seed = seed
-	else 
+	else
 		player.print({"msg.new-game-plus-start-invalid-seed"})
 		return nil
 	end
@@ -326,7 +334,7 @@ local function make_map_gen_settings(player)
 		return nil
 	end
 	map_gen_settings.peaceful_mode = config_options["new-game-plus-peaceful-mode-checkbox"].state
-	
+
 	local freq_options = {"very-low", "low", "normal", "high", "very-high"}
 	local size_options = {"none", "very-small", "small", "medium", "big", "very-big"}
 	local richn_options = {"very-poor", "poor", "regular", "good", "very-good"}
@@ -337,7 +345,7 @@ local function make_map_gen_settings(player)
 	--starting area
 	local starting_area_options = {"very-small", "small", "medium", "big", "very-big"}
 	map_gen_settings.starting_area = starting_area_options[resource_table["new-game-plus-config-starting-area-size"].selected_index]
-	-- resources
+	--resources
 	local autoplace_controls_mine = {}
 	for _, resource in pairs(game.entity_prototypes) do
 		if resource.type == "resource" and resource.autoplace_specification and resource.name ~= "lithia-water" then
@@ -348,6 +356,14 @@ local function make_map_gen_settings(player)
 			}
 		end
 	end
+	--building platform mod
+	if game.active_mods["building-platform"] and settings.startup["bp-platform-generator"].value == "default" and game.tile_prototypes["building-platform"] and game.tile_prototypes["building-platform"].autoplace_specification then
+		autoplace_controls_mine["building-platform"] = {
+		frequency = freq_options[resource_table["new-game-plus-config-building-platform-freq"].selected_index],
+		size = size_options[resource_table["new-game-plus-config-building-platform-size"].selected_index]
+		}
+	end
+	--biters
 	if game.entity_prototypes["biter-spawner"] and game.entity_prototypes["biter-spawner"].autoplace_specification and game.entity_prototypes["spitter-spawner"] and game.entity_prototypes["spitter-spawner"].autoplace_specification then
 		autoplace_controls_mine["enemy-base"] = {
 		frequency = freq_options[resource_table["new-game-plus-config-enemy-base-freq"].selected_index],
@@ -371,30 +387,36 @@ local function generate_new_world(player)
 			player.print({"msg.new-game-plus-outdated-rso"})
 			return
 		end
+	else
+		debug_log("No RSO found")
+		global.use_rso = false
 	end
 	-- MAP GEN SETTINGS
 	debug_log("Making map gen settings...")
 	local map_gen_settings = make_map_gen_settings(player)
-	if not map_gen_settings then return end
+	if not map_gen_settings then
+		debug_log("Aborted generating new game plus")
+		return
+	end
 	-- MAP SETTINGS
 	debug_log("Changing map settings...")
-	if not change_map_settings(player) then return end
+	if not change_map_settings(player) then
+		debug_log("Aborted generating new game plus")
+		return
+	end
 	-- create new surface --
 	debug_log("Creating surface...")
 	local nauvis_plus = game.create_surface("Nauvis plus " .. global.next_nauvis_number, map_gen_settings)
 	-- teleport players to new surface --
-	debug_log("Teleporting players...")
 	for _, player in pairs(game.players) do
 		player.teleport({1, 1}, nauvis_plus)
 		player.force.chart(nauvis_plus, {{player.position.x - 200, player.position.y - 200}, {player.position.x + 200, player.position.y + 200}})
 	end 
 	--set spawn
-	debug_log("Setting spawns...")
 	for _, force in pairs(game.forces) do
 		force.set_spawn_position({1,1}, nauvis_plus)
 	end
 	--set whether the tech needs to be reset
-	debug_log("Determining if research needs to be reset...")
 	local frame_flow = mod_gui.get_frame_flow(player)
 	if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-research-checkbox"].state then
 		global.tech_reset = true
@@ -459,11 +481,11 @@ local function make_grass_bridge(from, to, surface) --makes a two tile wide nort
 		if tile.name:find("water") then
 			table.insert(tile_table,{name="grass", position={0, y}})
 		end
-		local tile = surface.get_tile(1, y)
+		tile = surface.get_tile(1, y)
 		if tile.name:find("water") then
 			table.insert(tile_table,{name="grass", position={1, y}})
 		end
-	end 
+	end
 	surface.set_tiles(tile_table)
 end
 
@@ -471,7 +493,7 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
 	if global.next_nauvis_number == 1 then return end
 	local this_nauvis_number = global.next_nauvis_number - 1
 	local surface = event.surface
-	if surface.name == "Nauvis plus " .. this_nauvis_number then 
+	if surface.name == "Nauvis plus " .. this_nauvis_number then
 		local chunk_area = event.area
 		if chunk_area.left_top.x == 0 and chunk_area.left_top.y == 0 and chunk_area.right_bottom.x == 32 and chunk_area.right_bottom.y == 32 then
 			debug_log("Making grass bridge in first chunk...")
@@ -502,7 +524,7 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
 	end
 end)
 
-script.on_configuration_changed(function() --regen gui in case a mod added/removed resources, only if a rocket has been launched
+script.on_configuration_changed(function() --regen gui in case a mod added/removed resources, only if a rocket has been launched; also runs if startup settings change
 	if global.rocket_launched then
 		for _, player in pairs(game.players) do
 			regen_gui(player)
@@ -516,7 +538,7 @@ script.on_event(defines.events.on_player_created, function(event) --create gui f
 	end
 end)
 
-script.on_init(function() 
+script.on_init(function()
 	global.next_nauvis_number = 1
 	global.use_rso = false
 end)
