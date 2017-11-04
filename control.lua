@@ -432,15 +432,14 @@ local function generate_new_world(player)
 	debug_log("Removing surfaces...")
 	for _,surface in pairs(game.surfaces) do
 		if surface.name == "nauvis" then --can't delete nauvis
-			for chunk in surface.get_chunks() do --so I delete its chunks on it
-				local area = {{chunk.x*32, chunk.y*32}, {chunk.x*32+32, chunk.y*32+32}}
-				local entities = surface.find_entities(area)
-				for _, entity in pairs(entities) do
+			local entities = surface.find_entities()
+			for _, entity in pairs(entities) do
 					script.raise_event(defines.events.on_entity_died, {entity=entity}) --raise event so that mods can do their stuff with the entities
-				end
-				for _, entity in pairs(entities) do
+			end
+			for _, entity in pairs(entities) do
 					if entity.valid then entity.destroy() end
 				end
+			for chunk in surface.get_chunks() do --so I delete its chunks on it
 				surface.delete_chunk({chunk.x, chunk.y})
 			end
 		elseif not surface.name:find("Factory floor") and (surface.name ~= "Nauvis plus " .. global.next_nauvis_number) then --don't delete factorissimo stuff or the new surface

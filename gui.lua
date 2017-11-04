@@ -283,26 +283,28 @@ local function make_resource_settings_gui(config_frame)
 		end
 	end
 	--building platform mod
-	config_resource_table.add{
-		type = "label",
-		caption = {"autoplace-control-names.building-platform"}
-	}
-	local bp_freq = config_resource_table.add{
-		type = "drop-down",
-		name = "new-game-plus-config-building-platform-freq",
-	}
-	bp_freq.items = freq_options
-	bp_freq.selected_index = 3
-	local bp_size = config_resource_table.add{
-		type = "drop-down",
-		name = "new-game-plus-config-building-platform-size",
-	}
-	bp_size.items = size_options
-	bp_size.selected_index = 4
-	config_resource_table.add{
-		type = "label",
-		caption = " ",
-	}
+	if game.active_mods["building-platform"] and settings.startup["bp-platform-generator"].value == "default" and game.tile_prototypes["building-platform"] and game.tile_prototypes["building-platform"].autoplace_specification then
+		config_resource_table.add{
+			type = "label",
+			caption = {"autoplace-control-names.building-platform"}
+		}
+		local bp_freq = config_resource_table.add{
+			type = "drop-down",
+			name = "new-game-plus-config-building-platform-freq",
+		}
+		bp_freq.items = freq_options
+		bp_freq.selected_index = 3
+		local bp_size = config_resource_table.add{
+			type = "drop-down",
+			name = "new-game-plus-config-building-platform-size",
+		}
+		bp_size.items = size_options
+		bp_size.selected_index = 4
+		config_resource_table.add{
+			type = "label",
+			caption = " ",
+		}
+	end
 	--biters
 	if game.entity_prototypes["biter-spawner"] and game.entity_prototypes["biter-spawner"].autoplace_specification and game.entity_prototypes["spitter-spawner"] and game.entity_prototypes["spitter-spawner"].autoplace_specification then
 		generate_resource_options("enemy-base", config_resource_table, freq_options, size_options, richn_options)

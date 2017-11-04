@@ -10,6 +10,11 @@ Works with mods that add ores or terrain etc. If you want to generate a new worl
 
 Changelog:
 
+1.1.2
+
+* Fixed building platfrom option appearing although the building platform mod was not installed
+* Changed how on_entity_died is raised when deleting chunks, should prevent weirdness due to chunk borders when interacting with another mod's entities
+
 1.1.1
 
 * Added support for the building platform mod
