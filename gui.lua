@@ -60,12 +60,11 @@ local function make_expansion_settings_gui(config_more_table, map_settings)
 		name = "new-game-plus-enemy-expansion-checkbox",
 		state = map_settings.enemy_expansion.enabled,
 	}
-	local thirty = 30
-	make_config_option(config_more_option_expansion_table, "expansion-distance", {"gui-map-generator.enemy-expansion-maximum-expansion-distance"}, {"gui-map-generator.enemy-expansion-maximum-expansion-distance-description"}, tostring(map_settings.enemy_expansion.max_expansion_distance), thirty)
-	make_config_option(config_more_option_expansion_table, "expansion-min-size", {"gui-map-generator.enemy-expansion-minimum-expansion-group-size"}, {"gui-map-generator.enemy-expansion-minimum-expansion-group-size-description"}, tostring(map_settings.enemy_expansion.settler_group_min_size), thirty)
-	make_config_option(config_more_option_expansion_table, "expansion-max-size", {"gui-map-generator.enemy-expansion-maximum-expansion-group-size"}, {"gui-map-generator.enemy-expansion-maximum-expansion-group-size-description"}, tostring(map_settings.enemy_expansion.settler_group_max_size), thirty)
-	make_config_option(config_more_option_expansion_table, "expansion-min-cd", {"gui.new-game-plus-in-unit", {"gui-map-generator.enemy-expansion-minimum-expansion-cooldown"}, {"minute5+"}}, {"gui-map-generator.enemy-expansion-minimum-expansion-cooldown-description"},  tostring(map_settings.enemy_expansion.min_expansion_cooldown / 3600), thirty)
-	make_config_option(config_more_option_expansion_table, "expansion-max-cd", {"gui.new-game-plus-in-unit", {"gui-map-generator.enemy-expansion-maximum-expansion-cooldown"}, {"minute5+"}}, {"gui-map-generator.enemy-expansion-maximum-expansion-cooldown-description"}, tostring(map_settings.enemy_expansion.max_expansion_cooldown / 3600), thirty)
+	make_config_option(config_more_option_expansion_table, "expansion-distance", {"gui-map-generator.enemy-expansion-maximum-expansion-distance"}, {"gui-map-generator.enemy-expansion-maximum-expansion-distance-description"}, tostring(map_settings.enemy_expansion.max_expansion_distance), 30)
+	make_config_option(config_more_option_expansion_table, "expansion-min-size", {"gui-map-generator.enemy-expansion-minimum-expansion-group-size"}, {"gui-map-generator.enemy-expansion-minimum-expansion-group-size-description"}, tostring(map_settings.enemy_expansion.settler_group_min_size), 30)
+	make_config_option(config_more_option_expansion_table, "expansion-max-size", {"gui-map-generator.enemy-expansion-maximum-expansion-group-size"}, {"gui-map-generator.enemy-expansion-maximum-expansion-group-size-description"}, tostring(map_settings.enemy_expansion.settler_group_max_size), 30)
+	make_config_option(config_more_option_expansion_table, "expansion-min-cd", {"gui.new-game-plus-in-unit", {"gui-map-generator.enemy-expansion-minimum-expansion-cooldown"}, {"minute5+"}}, {"gui-map-generator.enemy-expansion-minimum-expansion-cooldown-description"},  tostring(map_settings.enemy_expansion.min_expansion_cooldown / 3600), 30)
+	make_config_option(config_more_option_expansion_table, "expansion-max-cd", {"gui.new-game-plus-in-unit", {"gui-map-generator.enemy-expansion-maximum-expansion-cooldown"}, {"minute5+"}}, {"gui-map-generator.enemy-expansion-maximum-expansion-cooldown-description"}, tostring(map_settings.enemy_expansion.max_expansion_cooldown / 3600), 30)
 end
 
 local function make_pollution_settings_gui(config_more_table, map_settings)
@@ -233,10 +232,7 @@ local function make_resource_settings_gui(config_frame)
 		name = "new-game-plus-config-resource-table",
 		colspan = 4
 	}
-	config_resource_table.add{
-		type = "label",
-		caption = " "
-	}
+	config_resource_table.add{type = "label"}
 	config_resource_table.add{
 		type = "label",
 		caption = {"gui-map-generator.frequency"},
@@ -272,10 +268,7 @@ local function make_resource_settings_gui(config_frame)
 	}
 	water_size.items = size_options --first option should actually be size.only-starting-area but that localized string is waaaay too long
 	water_size.selected_index = 4
-	config_resource_table.add{
-		type = "label",
-		caption = " "
-	}
+	config_resource_table.add{type = "label"}
 	--resources
 	for _, resource in pairs(game.entity_prototypes) do
 		if resource.type == "resource" and resource.autoplace_specification then
@@ -300,10 +293,7 @@ local function make_resource_settings_gui(config_frame)
 		}
 		bp_size.items = size_options
 		bp_size.selected_index = 4
-		config_resource_table.add{
-			type = "label",
-			caption = " ",
-		}
+		config_resource_table.add{type = "label"}
 	end
 	--biters
 	if game.entity_prototypes["biter-spawner"] and game.entity_prototypes["biter-spawner"].autoplace_specification and game.entity_prototypes["spitter-spawner"] and game.entity_prototypes["spitter-spawner"].autoplace_specification then
@@ -314,20 +304,14 @@ local function make_resource_settings_gui(config_frame)
 		type = "label",
 		caption = {"gui-map-generator.starting-area"}
 	}
-	config_resource_table.add{
-		type = "label",
-		caption = " "
-	}
+	config_resource_table.add{type = "label"}
 	local starting_area_size = config_resource_table.add{
 		type = "drop-down",
 		name = "new-game-plus-config-starting-area-size",
 	}
 	starting_area_size.items = {{"size.very-low"}, {"size.low"}, {"size.normal"}, {"size.high"}, {"size.very-high"}}
 	starting_area_size.selected_index = 3
-	config_resource_table.add{
-		type = "label",
-		caption = " ",
-	}
+	config_resource_table.add{type = "label"}
 end
 
 local function make_basic_settings_gui(config_frame)
