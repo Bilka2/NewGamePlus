@@ -10,6 +10,10 @@ Works with mods that add ores or terrain etc. If you want to generate a new worl
 
 Changelog:
 
+2.0.0
+
+* Update to 0.16
+
 1.1.2
 
 * Fixed building platform option appearing although the building platform mod was not installed

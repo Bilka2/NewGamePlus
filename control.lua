@@ -1,4 +1,5 @@
 local mod_gui = require("mod-gui")
+local util = require("util")
 require("gui")
 local DEBUG_MODE = true
 
@@ -30,27 +31,26 @@ local function reset_to_default(player)
 	-- MAP GEN SETTINGS --
 	-- resource table --
 	local resource_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-resource-table"]
+	local terrain_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-terrain-table"]
+	local resources = util.get_table_of_resources()
 	--water stuff
-	resource_table["new-game-plus-config-water-freq"].selected_index = 3
-	resource_table["new-game-plus-config-water-size"].selected_index = 4
+	terrain_table["new-game-plus-config-water-freq"].selected_index = 3
+	terrain_table["new-game-plus-config-water-size"].selected_index = 4
 	--starting area
-	resource_table["new-game-plus-config-starting-area-size"].selected_index = 3
-	-- resources
-	for _, resource in pairs(game.entity_prototypes) do
-		if resource.type == "resource" and resource.autoplace_specification and resource.name ~= "lithia-water" then
-			resource_table["new-game-plus-config-" .. resource.name .. "-freq"].selected_index = 3
-			resource_table["new-game-plus-config-" .. resource.name .. "-size"].selected_index = 4
-			resource_table["new-game-plus-config-" .. resource.name .. "-richn"].selected_index = 3
+	terrain_table["new-game-plus-config-starting-area-size"].selected_index = 3
+	-- resources and terrain
+	local autoplace_control_prototypes = game.autoplace_control_prototypes
+	for _, control in pairs(autoplace_control_prototypes) do
+		if resources[control.name] then
+			resource_table["new-game-plus-config-" .. control.name .. "-freq"].selected_index = 3
+			resource_table["new-game-plus-config-" .. control.name .. "-size"].selected_index = 4
+			resource_table["new-game-plus-config-" .. control.name .. "-richn"].selected_index = 3
+		else
+			terrain_table["new-game-plus-config-" .. control.name .. "-freq"].selected_index = 3
+			terrain_table["new-game-plus-config-" .. control.name .. "-size"].selected_index = 4
+			if control.richness then terrain_table["new-game-plus-config-" .. control.name .. "-richn"].selected_index = 3 end
 		end
 	end
-	--building platform mod
-	if game.active_mods["building-platform"] and settings.startup["bp-platform-generator"].value == "default" and game.tile_prototypes["building-platform"] and game.tile_prototypes["building-platform"].autoplace_specification then
-		resource_table["new-game-plus-config-building-platform-freq"].selected_index = 3
-		resource_table["new-game-plus-config-building-platform-size"].selected_index = 4
-	end
-	resource_table["new-game-plus-config-enemy-base-freq"].selected_index = 3
-	resource_table["new-game-plus-config-enemy-base-size"].selected_index = 4
-	resource_table["new-game-plus-config-enemy-base-richn"].selected_index = 3
 	-- DIFFICULTY SETTINGS --
 	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
 	local difficulty_table = more_config_table["new-game-plus-config-more-difficulty-flow"]["new-game-plus-config-more-difficulty-table"]
@@ -94,6 +94,8 @@ local function use_current_map_gen(player)
 	-- MAP GEN SETTINGS --
 	-- resource table --
 	local resource_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-resource-table"]
+	local terrain_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-terrain-table"]
+	local resources = util.get_table_of_resources()
 	local none_lookup = {
 		["none"] = 1,
 		["very-low"] = 2,
@@ -110,17 +112,24 @@ local function use_current_map_gen(player)
 		["very-high"] = 5
 	}
 	--water stuff
-	resource_table["new-game-plus-config-water-freq"].selected_index = lookup[map_gen_settings.terrain_segmentation]
-	resource_table["new-game-plus-config-water-size"].selected_index = none_lookup[map_gen_settings.water]
+	terrain_table["new-game-plus-config-water-freq"].selected_index = lookup[map_gen_settings.terrain_segmentation]
+	terrain_table["new-game-plus-config-water-size"].selected_index = none_lookup[map_gen_settings.water]
 	--starting area
-	resource_table["new-game-plus-config-starting-area-size"].selected_index = lookup[map_gen_settings.starting_area]
-	-- resources
+	terrain_table["new-game-plus-config-starting-area-size"].selected_index = lookup[map_gen_settings.starting_area]
+	-- resources and terrain
 	local autoplace_controls = map_gen_settings.autoplace_controls
 	for resource, tbl in pairs(autoplace_controls) do
-		resource_table["new-game-plus-config-" .. resource .. "-freq"].selected_index = lookup[tbl["frequency"]]
-		resource_table["new-game-plus-config-" .. resource .. "-size"].selected_index = none_lookup[tbl["size"]]
-		if resource ~= "building-platform" then --building platforms dont have richness
+		if resources[resource] then
+			resource_table["new-game-plus-config-" .. resource .. "-freq"].selected_index = lookup[tbl["frequency"]]
+			resource_table["new-game-plus-config-" .. resource .. "-size"].selected_index = none_lookup[tbl["size"]]
 			resource_table["new-game-plus-config-" .. resource .. "-richn"].selected_index = lookup[tbl["richness"]]
+		else
+			log(resource)
+			terrain_table["new-game-plus-config-" .. resource .. "-freq"].selected_index = lookup[tbl["frequency"]]
+			terrain_table["new-game-plus-config-" .. resource .. "-size"].selected_index = none_lookup[tbl["size"]]
+			if terrain_table["new-game-plus-config-" .. resource .. "-richn"] then
+				terrain_table["new-game-plus-config-" .. resource .. "-richn"].selected_index = lookup[tbl["richness"]]
+			end
 		end
 	end
 	-- DIFFICULTY SETTINGS --
@@ -135,9 +144,9 @@ local function use_current_map_gen(player)
 	--Evolution
 	local evo_table = more_config_table["new-game-plus-config-more-evo-flow"]["new-game-plus-config-more-evo-table"]
 	evo_table["new-game-plus-evolution-checkbox"].state = map_settings.enemy_evolution.enabled
-	evo_table["new-game-plus-evolution-time-textfield"].text = format_number(map_settings.enemy_evolution.time_factor)
-	evo_table["new-game-plus-evolution-destroy-textfield"].text = format_number(map_settings.enemy_evolution.destroy_factor)
-	evo_table["new-game-plus-evolution-pollution-textfield"].text = format_number(map_settings.enemy_evolution.pollution_factor)
+	evo_table["new-game-plus-evolution-time-textfield"].text = util.float_to_string(map_settings.enemy_evolution.time_factor)
+	evo_table["new-game-plus-evolution-destroy-textfield"].text = util.float_to_string(map_settings.enemy_evolution.destroy_factor)
+	evo_table["new-game-plus-evolution-pollution-textfield"].text = util.float_to_string(map_settings.enemy_evolution.pollution_factor)
 	--Pollution
 	local pollution_table = more_config_table["new-game-plus-config-more-pollution-flow"]["new-game-plus-config-more-pollution-table"]
 	pollution_table["new-game-plus-pollution-checkbox"].state = map_settings.pollution.enabled
@@ -156,24 +165,6 @@ local function use_current_map_gen(player)
 end
 
 -- WOLRD GEN --
-local function textfield_to_uint(textfield)
-	local number = tonumber(textfield.text)
-	if textfield.text and number and (number >= 0) and (number <= 4294967295) and (math.floor(number) == number) then
-		return number
-	else
-		return false
-	end
-end
-
-local function textfield_to_number(textfield)
-	local number = tonumber(textfield.text)
-	if textfield.text and number then
-		return number
-	else
-		return false
-	end
-end
-
 local function change_map_settings(player)
 	local frame_flow = mod_gui.get_frame_flow(player)
 	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
@@ -188,7 +179,7 @@ local function change_map_settings(player)
 	local difficulty_table = more_config_table["new-game-plus-config-more-difficulty-flow"]["new-game-plus-config-more-difficulty-table"]
 	difficulty_settings.recipe_difficulty = difficulty_table["new-game-plus-recipe-difficulty-drop-down"].selected_index - 1
 	difficulty_settings.technology_difficulty = difficulty_table["new-game-plus-technology-difficulty-drop-down"].selected_index - 1
-	local technology_price_multiplier = textfield_to_uint(difficulty_table["new-game-plus-technology-multiplier-textfield"])
+	local technology_price_multiplier = util.textfield_to_uint(difficulty_table["new-game-plus-technology-multiplier-textfield"])
 	if technology_price_multiplier and (technology_price_multiplier > 0) and (technology_price_multiplier <= 1000) then
 		difficulty_settings.technology_price_multiplier = technology_price_multiplier
 	elseif technology_price_multiplier and (technology_price_multiplier > 0) and (technology_price_multiplier > 1000) then
@@ -202,21 +193,21 @@ local function change_map_settings(player)
 	--Evolution
 	local evo_table = more_config_table["new-game-plus-config-more-evo-flow"]["new-game-plus-config-more-evo-table"]
 	map_settings.enemy_evolution.enabled = evo_table["new-game-plus-evolution-checkbox"].state
-	local evolution_time = textfield_to_number(evo_table["new-game-plus-evolution-time-textfield"])
+	local evolution_time = util.textfield_to_number(evo_table["new-game-plus-evolution-time-textfield"])
 	if evolution_time and (evolution_time >= 0) and (evolution_time <= 0.0001) then
 		map_settings.enemy_evolution.time_factor = evolution_time
 	else
 		player.print({"msg.new-game-plus-invalid-evolution-time"})
 		return false
 	end
-	local evolution_destroy = textfield_to_number(evo_table["new-game-plus-evolution-destroy-textfield"])
+	local evolution_destroy = util.textfield_to_number(evo_table["new-game-plus-evolution-destroy-textfield"])
 	if evolution_destroy and (evolution_destroy >= 0) and (evolution_destroy <= 0.01) then
 		map_settings.enemy_evolution.destroy_factor = evolution_destroy
 	else
 		player.print({"msg.new-game-plus-invalid-evolution-destroy"})
 		return false
 	end
-	local evolution_pollution = textfield_to_number(evo_table["new-game-plus-evolution-pollution-textfield"])
+	local evolution_pollution = util.textfield_to_number(evo_table["new-game-plus-evolution-pollution-textfield"])
 	if evolution_pollution and (evolution_pollution >= 0) and (evolution_pollution <= 0.0001) then
 		map_settings.enemy_evolution.pollution_factor = evolution_pollution
 	else
@@ -226,28 +217,28 @@ local function change_map_settings(player)
 	--Pollution
 	local pollution_table = more_config_table["new-game-plus-config-more-pollution-flow"]["new-game-plus-config-more-pollution-table"]
 	map_settings.pollution.enabled = pollution_table["new-game-plus-pollution-checkbox"].state
-	local pollution_diffusion = textfield_to_uint(pollution_table["new-game-plus-pollution-diffusion-textfield"])
+	local pollution_diffusion = util.textfield_to_uint(pollution_table["new-game-plus-pollution-diffusion-textfield"])
 	if pollution_diffusion and (pollution_diffusion >= 0) and (pollution_diffusion <= 25) then
 		map_settings.pollution.diffusion_ratio = (pollution_diffusion / 100)
 	else
 		player.print({"msg.new-game-plus-invalid-pollution-diffusion"})
 		return false
 	end
-	local pollution_dissipation = textfield_to_uint(pollution_table["new-game-plus-pollution-dissipation-textfield"])
+	local pollution_dissipation = util.textfield_to_uint(pollution_table["new-game-plus-pollution-dissipation-textfield"])
 	if pollution_dissipation and (pollution_dissipation > 0) and (pollution_dissipation <= 1000) then
 		map_settings.pollution.ageing = pollution_dissipation
 	else
 		player.print({"msg.new-game-plus-invalid-pollution-dissipation"})
 		return false
 	end
-	local pollution_tree_dmg = textfield_to_uint(pollution_table["new-game-plus-pollution-tree-dmg-textfield"])
+	local pollution_tree_dmg = util.textfield_to_uint(pollution_table["new-game-plus-pollution-tree-dmg-textfield"])
 	if pollution_tree_dmg and (pollution_tree_dmg >= 0) and (pollution_tree_dmg <= 9999) then
 		map_settings.pollution.min_pollution_to_damage_trees = pollution_tree_dmg
 	else
 		player.print({"msg.new-game-plus-invalid-pollution-tree-dmg"})
 		return false
 	end
-	local pollution_tree_absorb = textfield_to_uint(pollution_table["new-game-plus-pollution-tree-absorb-textfield"])
+	local pollution_tree_absorb = util.textfield_to_uint(pollution_table["new-game-plus-pollution-tree-absorb-textfield"])
 	if pollution_tree_absorb and (pollution_tree_absorb >= 0) and (pollution_tree_absorb <= 9999) then
 		map_settings.pollution.pollution_restored_per_tree_damage = pollution_tree_absorb
 	else
@@ -257,21 +248,21 @@ local function change_map_settings(player)
 	--Enemy expansion
 	local expansion_table = more_config_table["new-game-plus-config-more-expansion-flow"]["new-game-plus-config-more-expansion-table"]
 	map_settings.enemy_expansion.enabled = expansion_table["new-game-plus-enemy-expansion-checkbox"].state
-	local expansion_distance = textfield_to_uint(expansion_table["new-game-plus-expansion-distance-textfield"])
+	local expansion_distance = util.textfield_to_uint(expansion_table["new-game-plus-expansion-distance-textfield"])
 	if expansion_distance and (expansion_distance >= 2) and (expansion_distance <= 20) then
 		map_settings.enemy_expansion.max_expansion_distance = expansion_distance
 	else
 		player.print({"msg.new-game-plus-invalid-expansion-distance"})
 		return false
 	end
-	local expansion_min_size = textfield_to_uint(expansion_table["new-game-plus-expansion-min-size-textfield"])
+	local expansion_min_size = util.textfield_to_uint(expansion_table["new-game-plus-expansion-min-size-textfield"])
 	if expansion_min_size and (expansion_min_size >= 1) and (expansion_min_size <= 20) then
 		map_settings.enemy_expansion.settler_group_min_size = expansion_min_size
 	else
 		player.print({"msg.new-game-plus-invalid-expansion-min-size"})
 		return false
 	end
-	local expansion_max_size = textfield_to_uint(expansion_table["new-game-plus-expansion-max-size-textfield"])
+	local expansion_max_size = util.textfield_to_uint(expansion_table["new-game-plus-expansion-max-size-textfield"])
 	if expansion_max_size and (expansion_max_size >= 1) and (expansion_max_size <= 50) then
 		if expansion_max_size < map_settings.enemy_expansion.settler_group_min_size then
 			player.print({"msg.new-game-plus-too-low-expansion-max-size"})
@@ -283,14 +274,14 @@ local function change_map_settings(player)
 		player.print({"msg.new-game-plus-invalid-expansion-max-size"})
 		return false
 	end
-	local expansion_min_cd = textfield_to_uint(expansion_table["new-game-plus-expansion-min-cd-textfield"])
+	local expansion_min_cd = util.textfield_to_uint(expansion_table["new-game-plus-expansion-min-cd-textfield"])
 	if expansion_min_cd and (expansion_min_cd >= 1) and (expansion_min_cd <= 60) then
 		map_settings.enemy_expansion.min_expansion_cooldown = (expansion_min_cd * 3600)
 	else
 		player.print({"msg.new-game-plus-invalid-expansion-min-cd"})
 		return false
 	end
-	local expansion_max_cd = textfield_to_uint(expansion_table["new-game-plus-expansion-max-cd-textfield"])
+	local expansion_max_cd = util.textfield_to_uint(expansion_table["new-game-plus-expansion-max-cd-textfield"])
 	if expansion_max_cd and (expansion_max_cd >= 5) and (expansion_max_cd <= 180) then
 		if expansion_max_cd < (map_settings.enemy_expansion.min_expansion_cooldown / 3600) then
 			player.print({"msg.new-game-plus-too-low-expansion-max-cd"})
@@ -310,7 +301,7 @@ local function make_map_gen_settings(player)
 	local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
 	local map_gen_settings = {}
 	--general things
-	local seed = textfield_to_uint(config_options["new-game-plus-seed-textfield"])
+	local seed = util.textfield_to_uint(config_options["new-game-plus-seed-textfield"])
 	if seed and seed == 0 then
 		map_gen_settings.seed = math.random(0, 4294967295)
 	elseif seed then
@@ -319,14 +310,14 @@ local function make_map_gen_settings(player)
 		player.print({"msg.new-game-plus-start-invalid-seed"})
 		return nil
 	end
-	local width = textfield_to_uint(config_options["new-game-plus-width-textfield"])
+	local width = util.textfield_to_uint(config_options["new-game-plus-width-textfield"])
 	if width then
 		map_gen_settings.width = width
 	else
 		player.print({"msg.new-game-plus-start-invalid-width"})
 		return nil
 	end
-	local height = textfield_to_uint(config_options["new-game-plus-height-textfield"])
+	local height = util.textfield_to_uint(config_options["new-game-plus-height-textfield"])
 	if height then
 		map_gen_settings.height = height
 	else
@@ -335,41 +326,50 @@ local function make_map_gen_settings(player)
 	end
 	map_gen_settings.peaceful_mode = config_options["new-game-plus-peaceful-mode-checkbox"].state
 
+	-- Autoplace controls --
 	local freq_options = {"very-low", "low", "normal", "high", "very-high"}
 	local size_options = {"none", "very-small", "small", "medium", "big", "very-big"}
 	local richn_options = {"very-poor", "poor", "regular", "good", "very-good"}
+	local autoplace_control_prototypes = game.autoplace_control_prototypes
 	local resource_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-resource-table"]
-	--water stuff
-	map_gen_settings.terrain_segmentation = freq_options[resource_table["new-game-plus-config-water-freq"].selected_index]
-	map_gen_settings.water = size_options[resource_table["new-game-plus-config-water-size"].selected_index]
-	--starting area
-	local starting_area_options = {"very-small", "small", "medium", "big", "very-big"}
-	map_gen_settings.starting_area = starting_area_options[resource_table["new-game-plus-config-starting-area-size"].selected_index]
-	--resources
 	local autoplace_controls_mine = {}
-	for _, resource in pairs(game.entity_prototypes) do
-		if resource.type == "resource" and resource.autoplace_specification and resource.name ~= "lithia-water" then
-			autoplace_controls_mine[resource.name] = {
-				frequency = freq_options[resource_table["new-game-plus-config-" .. resource.name .. "-freq"].selected_index],
-				size = size_options[resource_table["new-game-plus-config-" .. resource.name .. "-size"].selected_index],
-				richness = richn_options[resource_table["new-game-plus-config-" .. resource.name .. "-richn"].selected_index]
+	local resources = util.get_table_of_resources()
+	--Resource settings--
+	--resources
+	for _, control in pairs(autoplace_control_prototypes) do
+		if resources[control.name] then
+			autoplace_controls_mine[control.name] = {
+				frequency = freq_options[resource_table["new-game-plus-config-" .. control.name .. "-freq"].selected_index],
+				size = size_options[resource_table["new-game-plus-config-" .. control.name .. "-size"].selected_index],
+				richness = richn_options[resource_table["new-game-plus-config-" .. control.name .. "-richn"].selected_index]
 			}
 		end
 	end
-	--building platform mod
-	if game.active_mods["building-platform"] and settings.startup["bp-platform-generator"].value == "default" and game.tile_prototypes["building-platform"] and game.tile_prototypes["building-platform"].autoplace_specification then
-		autoplace_controls_mine["building-platform"] = {
-		frequency = freq_options[resource_table["new-game-plus-config-building-platform-freq"].selected_index],
-		size = size_options[resource_table["new-game-plus-config-building-platform-size"].selected_index]
-		}
-	end
+	--Terrain settings--
+	local terrain_table = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-terrain-table"]
+	--water stuff
+	map_gen_settings.terrain_segmentation = freq_options[terrain_table["new-game-plus-config-water-freq"].selected_index]
+	map_gen_settings.water = size_options[terrain_table["new-game-plus-config-water-size"].selected_index]
+	--starting area
+	local starting_area_options = {"very-small", "small", "medium", "big", "very-big"}
+	map_gen_settings.starting_area = starting_area_options[terrain_table["new-game-plus-config-starting-area-size"].selected_index]
 	--biters
-	if game.entity_prototypes["biter-spawner"] and game.entity_prototypes["biter-spawner"].autoplace_specification and game.entity_prototypes["spitter-spawner"] and game.entity_prototypes["spitter-spawner"].autoplace_specification then
-		autoplace_controls_mine["enemy-base"] = {
-		frequency = freq_options[resource_table["new-game-plus-config-enemy-base-freq"].selected_index],
-		size = size_options[resource_table["new-game-plus-config-enemy-base-size"].selected_index],
-		richness = richn_options[resource_table["new-game-plus-config-enemy-base-richn"].selected_index]
-		}
+	--terrain (changing cliffs isn't implemented yet/implemented at a different place and idk what the values mean lol)
+	for _, control in pairs(autoplace_control_prototypes) do
+		if not resources[control.name] then
+			if control.richness then
+				autoplace_controls_mine[control.name] = {
+					frequency = freq_options[terrain_table["new-game-plus-config-" .. control.name .. "-freq"].selected_index],
+					size = size_options[terrain_table["new-game-plus-config-" .. control.name .. "-size"].selected_index],
+					richness = richn_options[terrain_table["new-game-plus-config-" .. control.name .. "-richn"].selected_index]
+				}
+			else
+				autoplace_controls_mine[control.name] = {
+					frequency = freq_options[terrain_table["new-game-plus-config-" .. control.name .. "-freq"].selected_index],
+					size = size_options[terrain_table["new-game-plus-config-" .. control.name .. "-size"].selected_index]
+				}
+			end
+		end
 	end
 	map_gen_settings.autoplace_controls = autoplace_controls_mine
 	return map_gen_settings
@@ -432,16 +432,14 @@ local function generate_new_world(player)
 	debug_log("Removing surfaces...")
 	for _,surface in pairs(game.surfaces) do
 		if surface.name == "nauvis" then --can't delete nauvis
-			local entities = surface.find_entities()
+			--[[local entities = surface.find_entities()
 			for _, entity in pairs(entities) do
-					script.raise_event(defines.events.on_entity_died, {entity=entity}) --raise event so that mods can do their stuff with the entities
-			end
-			for _, entity in pairs(entities) do
-					if entity.valid then entity.destroy() end
-				end
-			for chunk in surface.get_chunks() do --so I delete its chunks on it
+				script.raise_event(defines.events.on_entity_died, {entity=entity}) --raise event so that mods can do their stuff with the entities
+			end]] -- no longer dong this because it creates tons of entity objects which bloats ram. Quoting Rseding: "Not your problem if other mods don't check .valid"
+			for chunk in surface.get_chunks() do --so I delete its chunks
 				surface.delete_chunk({chunk.x, chunk.y})
 			end
+			debug_log("Deleted nauvis chunks.")
 		elseif not surface.name:find("Factory floor") and (surface.name ~= "Nauvis plus " .. global.next_nauvis_number) then --don't delete factorissimo stuff or the new surface
 			game.delete_surface(surface)
 		end
@@ -470,6 +468,9 @@ script.on_event({defines.events.on_gui_click}, function(event)
 		generate_new_world(player)
 	elseif clicked_name == "new-game-plus-default-button" then
 		reset_to_default(player)
+	elseif clicked_name == "new-game-plus-terrain-tab-button" then
+		frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-terrain-table"].style.visible = not frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-terrain-table"].style.visible
+		frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-resource-table"].style.visible = not frame_flow["new-game-plus-config-frame"]["new-game-plus-config-resource-scroll-pane"]["new-game-plus-config-resource-table"].style.visible
 	end
 end)
 
@@ -478,11 +479,11 @@ local function make_grass_bridge(from, to, surface) --makes a two tile wide nort
 	for y=from, to do
 		local tile = surface.get_tile(0, y)
 		if tile.name:find("water") then
-			table.insert(tile_table,{name="grass", position={0, y}})
+			table.insert(tile_table,{name="grass-1", position={0, y}})
 		end
 		tile = surface.get_tile(1, y)
 		if tile.name:find("water") then
-			table.insert(tile_table,{name="grass", position={1, y}})
+			table.insert(tile_table,{name="grass-1", position={1, y}})
 		end
 	end
 	surface.set_tiles(tile_table)

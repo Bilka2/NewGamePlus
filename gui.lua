@@ -1,4 +1,5 @@
 local mod_gui = require("mod-gui")
+local util = require("util")
 
 -- GUI --
 function kill_gui(player)
@@ -13,10 +14,6 @@ function kill_gui(player)
 	if frame_flow["new-game-plus-config-more-frame"] then
 		frame_flow["new-game-plus-config-more-frame"].destroy()
 	end
-end
-
-function format_number(number)
-	return string.format("%f", tostring(number))
 end
 
 local function make_config_option(parent, name, caption, tooltip, default, max_width)
@@ -43,12 +40,12 @@ local function make_expansion_settings_gui(config_more_table, map_settings)
 	config_more_option_expansion_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.enemy-expansion-group-tile"},
-		style = "caption_label_style"
+		style = "caption_label"
 	}
 	local config_more_option_expansion_table = config_more_option_expansion_flow.add{
 		type = "table",
 		name = "new-game-plus-config-more-expansion-table",
-		colspan = 2
+		column_count = 2
 	}
 	
 	config_more_option_expansion_table.add{
@@ -76,12 +73,12 @@ local function make_pollution_settings_gui(config_more_table, map_settings)
 	config_more_option_pollution_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.pollution"},
-		style = "caption_label_style"
+		style = "caption_label"
 	}
 	local config_more_option_pollution_table = config_more_option_pollution_flow.add{
 		type = "table",
 		name = "new-game-plus-config-more-pollution-table",
-		colspan = 2
+		column_count = 2
 	}
 	
 	config_more_option_pollution_table.add{
@@ -108,12 +105,12 @@ local function make_evolution_settings_gui(config_more_table, map_settings)
 	config_more_option_evo_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.evolution"},
-		style = "caption_label_style"
+		style = "caption_label"
 	}
 	local config_more_option_evo_table = config_more_option_evo_flow.add{
 		type = "table",
 		name = "new-game-plus-config-more-evo-table",
-		colspan = 2
+		column_count = 2
 	}
 	
 	config_more_option_evo_table.add{
@@ -125,9 +122,9 @@ local function make_evolution_settings_gui(config_more_table, map_settings)
 		name = "new-game-plus-evolution-checkbox",
 		state = map_settings.enemy_evolution.enabled,
 	}
-	make_config_option(config_more_option_evo_table, "evolution-time", {"gui-map-generator.evolution-time-factor"}, {"gui-map-generator.evolution-time-factor-description"}, format_number(map_settings.enemy_evolution.time_factor), 80)
-	make_config_option(config_more_option_evo_table, "evolution-destroy", {"gui-map-generator.evolution-destroy-factor"}, {"gui-map-generator.evolution-destroy-factor-description"}, format_number(map_settings.enemy_evolution.destroy_factor), 80)
-	make_config_option(config_more_option_evo_table, "evolution-pollution", {"gui-map-generator.evolution-pollution-factor"}, {"gui-map-generator.evolution-pollution-factor-description"}, format_number(map_settings.enemy_evolution.pollution_factor), 80)
+	make_config_option(config_more_option_evo_table, "evolution-time", {"gui-map-generator.evolution-time-factor"}, {"gui-map-generator.evolution-time-factor-description"}, util.float_to_string(map_settings.enemy_evolution.time_factor), 80)
+	make_config_option(config_more_option_evo_table, "evolution-destroy", {"gui-map-generator.evolution-destroy-factor"}, {"gui-map-generator.evolution-destroy-factor-description"}, util.float_to_string(map_settings.enemy_evolution.destroy_factor), 80)
+	make_config_option(config_more_option_evo_table, "evolution-pollution", {"gui-map-generator.evolution-pollution-factor"}, {"gui-map-generator.evolution-pollution-factor-description"}, util.float_to_string(map_settings.enemy_evolution.pollution_factor), 80)
 end
 
 local function make_difficulty_settings_gui(config_more_table)
@@ -139,12 +136,12 @@ local function make_difficulty_settings_gui(config_more_table)
 	config_more_option_difficulty_flow.add{
 		type = "label",
 		caption = {"gui-map-generator.recipes-and-technology-group-tile"},
-		style = "caption_label_style"
+		style = "caption_label"
 	}
 	local config_more_option_difficulty_table = config_more_option_difficulty_flow.add{
 		type = "table",
 		name = "new-game-plus-config-more-difficulty-table",
-		colspan = 2
+		column_count = 2
 	}
 	
 	local difficulty_options = {{"recipe-difficulty.normal"}, {"recipe-difficulty.expensive"}}
@@ -184,7 +181,7 @@ local function make_advanced_settings_gui(config_more_frame)
 	local config_more_table = config_more_frame.add{
 		type = "table",
 		name = "new-game-plus-config-more-table",
-		colspan = 2
+		column_count = 2
 	}
 	local map_settings = game.map_settings
 	--make different advanced option groups
@@ -220,6 +217,108 @@ local function generate_resource_options(resource_name, config_resource_table, f
 	resource_richn.selected_index = 3
 end
 
+local function generate_terrain_options(terrain_name, parent_table, freq_options, size_options)
+	parent_table.add{
+		type = "label",
+		caption = {"autoplace-control-names." .. terrain_name}
+	}
+	local freq = parent_table.add{
+		type = "drop-down",
+		name = "new-game-plus-config-" .. terrain_name .. "-freq",
+	}
+	freq.items = freq_options
+	freq.selected_index = 3
+	local size = parent_table.add{
+		type = "drop-down",
+		name = "new-game-plus-config-" .. terrain_name .. "-size",
+	}
+	size.items = size_options
+	size.selected_index = 4
+	parent_table.add{type = "label"}
+end
+
+local function terrain_options(parent_table, freq_options, size_options, richn_options, resources)
+	--starting area
+	parent_table.add{
+		type = "label",
+		caption = {"gui-map-generator.starting-area"}
+	}
+	parent_table.add{type = "label"}
+	local starting_area_size = parent_table.add{
+		type = "drop-down",
+		name = "new-game-plus-config-starting-area-size",
+	}
+	starting_area_size.items = {{"size.very-low"}, {"size.low"}, {"size.normal"}, {"size.high"}, {"size.very-high"}}
+	starting_area_size.selected_index = 3
+	parent_table.add{type = "label"}
+	
+	--water
+	parent_table.add{
+		type = "label",
+		caption = {"gui-map-generator.water"}
+	}
+	local water_freq = parent_table.add{ 
+		type = "drop-down",
+		name = "new-game-plus-config-water-freq",
+	}
+	water_freq.items = freq_options
+	water_freq.selected_index = 3
+	local water_size = parent_table.add{ 
+		type = "drop-down",
+		name = "new-game-plus-config-water-size",
+	}
+	water_size.items = size_options --first option should actually be size.only-starting-area but that localized string is waaaay too long
+	water_size.selected_index = 4
+	parent_table.add{type = "label"}
+	
+	--terrain (changing cliffs isn't implemented yet/implemented at a different place and idk what the values mean lol)
+	for _, control in pairs(game.autoplace_control_prototypes) do
+		if not resources[control.name] then
+			if control.richness then
+				generate_resource_options(control.name, parent_table, freq_options, size_options, richn_options)
+			else
+				generate_terrain_options(control.name, parent_table, freq_options, size_options)
+			end
+		end
+	end
+end
+
+local function resource_options(config_resource_table, freq_options, size_options, richn_options, resources)
+	--resources
+	for _, control in pairs(game.autoplace_control_prototypes) do
+		if resources[control.name] then
+			generate_resource_options(control.name, config_resource_table, freq_options, size_options, richn_options)
+		end
+	end
+end
+
+local function autoplace_table_header(parent_table, bool)
+	local button = parent_table.add{
+		type = "button",
+		name = "new-game-plus-terrain-tab-button",
+		style = mod_gui.button_style,
+		caption = {"gui-map-generator.terrain-tab-title"}
+	}
+	if bool then
+		button.caption = {"gui-map-generator.resources-tab-title"}
+	end
+	parent_table.add{
+		type = "label",
+		caption = {"gui-map-generator.frequency"},
+		style = "caption_label"
+	}
+	parent_table.add{
+		type = "label",
+		caption = {"gui-map-generator.size"},
+		style = "caption_label"
+	}
+	parent_table.add{
+		type = "label",
+		caption = {"gui-map-generator.richness"},
+		style = "caption_label"
+	}
+end
+
 local function make_resource_settings_gui(config_frame)
 	local config_resource_scroll_pane = config_frame.add{
 		type = "scroll-pane",
@@ -227,98 +326,36 @@ local function make_resource_settings_gui(config_frame)
 	}
 	config_resource_scroll_pane.style.maximal_height = 400
 	config_resource_scroll_pane.style.visible = true
-	local config_resource_table = config_resource_scroll_pane.add{
-		type = "table",
-		name = "new-game-plus-config-resource-table",
-		colspan = 4
-	}
-	config_resource_table.add{type = "label"}
-	config_resource_table.add{
-		type = "label",
-		caption = {"gui-map-generator.frequency"},
-		style = "caption_label_style"
-	}
-	config_resource_table.add{
-		type = "label",
-		caption = {"gui-map-generator.size"},
-		style = "caption_label_style"
-	}
-	config_resource_table.add{
-		type = "label",
-		caption = {"gui-map-generator.richness"},
-		style = "caption_label_style"
-	}
+	
 	local freq_options = {{"frequency.very-low"}, {"frequency.low"}, {"frequency.normal"}, {"frequency.high"}, {"frequency.very-high"}}
 	local size_options = {{"size.none"}, {"size.very-low"}, {"size.low"}, {"size.normal"}, {"size.high"}, {"size.very-high"}}
 	local richn_options = {{"richness.very-low"}, {"richness.low"}, {"richness.normal"}, {"richness.high"}, {"richness.very-high"}}
-	--water stuff
-	config_resource_table.add{
-		type = "label",
-		caption = {"gui-map-generator.water"}
+	local resources = util.get_table_of_resources()
+	
+	local config_resource_table = config_resource_scroll_pane.add{
+		type = "table",
+		name = "new-game-plus-config-resource-table",
+		column_count = 4
 	}
-	local water_freq = config_resource_table.add{ --terrain segmentation
-		type = "drop-down",
-		name = "new-game-plus-config-water-freq",
+	config_resource_table.style.visible = true
+	autoplace_table_header(config_resource_table, false)
+	resource_options(config_resource_table, freq_options, size_options, richn_options, resources)
+	
+	local config_terrain_table = config_resource_scroll_pane.add{
+		type = "table",
+		name = "new-game-plus-config-terrain-table",
+		column_count = 4
 	}
-	water_freq.items = freq_options
-	water_freq.selected_index = 3
-	local water_size = config_resource_table.add{  --"water" in the map gen settings
-		type = "drop-down",
-		name = "new-game-plus-config-water-size",
-	}
-	water_size.items = size_options --first option should actually be size.only-starting-area but that localized string is waaaay too long
-	water_size.selected_index = 4
-	config_resource_table.add{type = "label"}
-	--resources
-	for _, resource in pairs(game.entity_prototypes) do
-		if resource.type == "resource" and resource.autoplace_specification then
-			generate_resource_options(resource.name, config_resource_table, freq_options, size_options, richn_options)
-		end
-	end
-	--building platform mod
-	if game.active_mods["building-platform"] and settings.startup["bp-platform-generator"].value == "default" and game.tile_prototypes["building-platform"] and game.tile_prototypes["building-platform"].autoplace_specification then
-		config_resource_table.add{
-			type = "label",
-			caption = {"autoplace-control-names.building-platform"}
-		}
-		local bp_freq = config_resource_table.add{
-			type = "drop-down",
-			name = "new-game-plus-config-building-platform-freq",
-		}
-		bp_freq.items = freq_options
-		bp_freq.selected_index = 3
-		local bp_size = config_resource_table.add{
-			type = "drop-down",
-			name = "new-game-plus-config-building-platform-size",
-		}
-		bp_size.items = size_options
-		bp_size.selected_index = 4
-		config_resource_table.add{type = "label"}
-	end
-	--biters
-	if game.entity_prototypes["biter-spawner"] and game.entity_prototypes["biter-spawner"].autoplace_specification and game.entity_prototypes["spitter-spawner"] and game.entity_prototypes["spitter-spawner"].autoplace_specification then
-		generate_resource_options("enemy-base", config_resource_table, freq_options, size_options, richn_options)
-	end
-	--starting area
-	config_resource_table.add{
-		type = "label",
-		caption = {"gui-map-generator.starting-area"}
-	}
-	config_resource_table.add{type = "label"}
-	local starting_area_size = config_resource_table.add{
-		type = "drop-down",
-		name = "new-game-plus-config-starting-area-size",
-	}
-	starting_area_size.items = {{"size.very-low"}, {"size.low"}, {"size.normal"}, {"size.high"}, {"size.very-high"}}
-	starting_area_size.selected_index = 3
-	config_resource_table.add{type = "label"}
+	config_terrain_table.style.visible = false
+	autoplace_table_header(config_terrain_table, true)
+	terrain_options(config_terrain_table, freq_options, size_options, richn_options, resources)
 end
 
 local function make_basic_settings_gui(config_frame)
 	local config_option_table = config_frame.add{
 		type = "table",
 		name = "new-game-plus-config-option-table",
-		colspan = 2
+		column_count = 2
 	}
 	config_option_table.add{
 		type = "label",
@@ -377,7 +414,7 @@ local function make_basic_settings_gui(config_frame)
 	local button_table = config_frame.add{
 		type = "table",
 		name = "new-game-plus-config-button-table",
-		colspan = 2
+		column_count = 2
 	}
 	button_table.add{
 		type = "button",
@@ -416,7 +453,7 @@ function regen_gui(player)
 	local config_frame_title_table = config_frame.add{
 		type = "table",
 		name = "new-game-plus-config-frame-title-table",
-		colspan = 2
+		column_count = 2
 	}
 	local config_frame_title = config_frame_title_table.add{
 		type = "label",
