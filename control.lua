@@ -536,6 +536,18 @@ script.on_event(defines.events.on_player_created, function(event) --create gui f
 	if global.rocket_launched then
 		regen_gui(game.players[event.player_index])
 	end
+	--teleport player to the right surface because they always spawn on nauvis
+	if global.next_nauvis_number > 1 then
+		local this_nauvis_number = global.next_nauvis_number - 1
+		local target_surface = game.surfaces["Nauvis plus " .. this_nauvis_number]
+		local player = game.players[event.player_index]
+		local pos = target_surface.find_non_colliding_position("player", {1, 1}, 0, 1)
+		if pos then
+			player.teleport(pos, target_surface)
+		else
+			game.print("Can't spawn the player in the new world, there is no space.")
+		end
+	end
 end)
 
 script.on_init(function()

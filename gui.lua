@@ -192,7 +192,6 @@ local function make_advanced_settings_gui(config_more_frame)
 end
 
 local function generate_resource_options(resource_name, config_resource_table, freq_options, size_options, richn_options)
-	if resource_name == "lithia-water" then return end --belongs to ground-water autoplace control (bob's mod)
 	config_resource_table.add{
 		type = "label",
 		caption = {"autoplace-control-names." .. resource_name}
@@ -453,7 +452,7 @@ function regen_gui(player)
 	local config_frame_title_table = config_frame.add{
 		type = "table",
 		name = "new-game-plus-config-frame-title-table",
-		column_count = 2
+		column_count = 3
 	}
 	local config_frame_title = config_frame_title_table.add{
 		type = "label",
@@ -462,8 +461,11 @@ function regen_gui(player)
 		style = frame_caption_label_style
 	}
 	config_frame_title.style.font = "default-frame"
-	config_frame_title.style.right_padding = 30
 	config_frame_title.style.bottom_padding = 5
+	local look_at_this_element = config_frame_title_table.add{
+		type = "flow"
+	}
+	look_at_this_element.style.horizontally_stretchable = true
 	config_frame_title_table.add{
 		type = "button",
 		name = "new-game-plus-more-options",
