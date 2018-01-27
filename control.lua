@@ -1,6 +1,6 @@
 local mod_gui = require("mod-gui")
 local util = require("util")
-require("gui")
+local gui = require("gui")
 local DEBUG_MODE = true
 
 local function debug_log(msg)
@@ -13,7 +13,7 @@ script.on_event(defines.events.on_rocket_launched, function(event)
 	if global.rocket_launched then return end --don't regen gui if this is not the first rocket launch
 	if event.rocket.get_item_count("satellite") > 0 then
 		for _, player in pairs(game.players) do
-			regen_gui(player)
+			gui.regen(player)
 		end
 		global.rocket_launched = true --the rocket has now been launched, so the gui has to be regened on player created and config changed
 	end
@@ -426,7 +426,7 @@ local function generate_new_world(player)
 	--kill the gui, it's not needed and should not exist in the background
 	debug_log("Destroying the gui...")
 	for _, player in pairs(game.players) do
-		kill_gui(player)
+		gui.kill(player)
 	end
 	--destroy the other surfaces
 	debug_log("Removing surfaces...")
@@ -527,14 +527,14 @@ end)
 script.on_configuration_changed(function() --regen gui in case a mod added/removed resources, only if a rocket has been launched; also runs if startup settings change
 	if global.rocket_launched then
 		for _, player in pairs(game.players) do
-			regen_gui(player)
+			gui.regen(player)
 		end
 	end
 end)
 
 script.on_event(defines.events.on_player_created, function(event) --create gui for joining player, only if a rocket has been launched
 	if global.rocket_launched then
-		regen_gui(game.players[event.player_index])
+		gui.regen(game.players[event.player_index])
 	end
 	--teleport player to the right surface because they always spawn on nauvis
 	if global.next_nauvis_number > 1 then
@@ -559,7 +559,7 @@ commands.add_command("ngp-gui", {"msg.new-game-plus-gui-command-help"}, function
 	if game.players[event.player_index].admin then
 		if settings.global["new-game-plus-allow-early-gui"].value then
 			for _, player in pairs(game.players) do
-				regen_gui(player)
+				gui.regen(player)
 			end
 			global.rocket_launched = true --the rocket has now been launched, so the gui has to be regened on player created and config changed
 		else
