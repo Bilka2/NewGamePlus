@@ -474,10 +474,6 @@ local function generate_new_world(player)
   debug_log("Removing surfaces...")
   for _,surface in pairs(game.surfaces) do
     if surface.name == "nauvis" then --can't delete nauvis
-      --[[local entities = surface.find_entities()
-      for _, entity in pairs(entities) do
-        script.raise_event(defines.events.on_entity_died, {entity=entity}) --raise event so that mods can do their stuff with the entities
-      end]] -- no longer dong this because it creates tons of entity objects which bloats ram. Quoting Rseding: "Not your problem if other mods don't check .valid"
       for chunk in surface.get_chunks() do --so I delete its chunks
         surface.delete_chunk({chunk.x, chunk.y})
       end
