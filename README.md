@@ -10,6 +10,10 @@ Works with mods that add ores or terrain etc. If you want to generate a new worl
 
 Changelog:
 
+2.1.0
+
+* Fixed that the player didnt consider tile transitions
+
 2.0.1
 
 * Fixed that new players in multiplayers games would spawn in the wrong world
