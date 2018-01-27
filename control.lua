@@ -413,7 +413,6 @@ local function make_map_gen_settings(player)
   cliff_settings.name = "cliff"
   cliff_settings.cliff_elevation_interval = cliff_freq_lookup[terrain_table["new-game-plus-config-cliffs-freq"].selected_index]
   cliff_settings.cliff_elevation_0 = cliff_size_lookup[terrain_table["new-game-plus-config-cliffs-size"].selected_index]
-  game.print(serpent.line(cliff_settings))
   map_gen_settings.cliff_settings = cliff_settings
   return map_gen_settings
 end

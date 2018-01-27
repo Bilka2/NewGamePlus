@@ -12,6 +12,7 @@ Changelog:
 
 2.1.0
 
+* Added cliff settings to the options
 * Fixed that the player didnt consider tile transitions
 
 2.0.1
