@@ -51,6 +51,9 @@ local function reset_to_default(player)
 			if control.richness then terrain_table["new-game-plus-config-" .. control.name .. "-richn"].selected_index = 3 end
 		end
 	end
+  --cliffs
+  terrain_table["new-game-plus-config-cliffs-freq"].selected_index = 3
+  terrain_table["new-game-plus-config-cliffs-size"].selected_index = 4
 	-- DIFFICULTY SETTINGS --
 	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
 	local difficulty_table = more_config_table["new-game-plus-config-more-difficulty-flow"]["new-game-plus-config-more-difficulty-table"]
@@ -124,7 +127,6 @@ local function use_current_map_gen(player)
 			resource_table["new-game-plus-config-" .. resource .. "-size"].selected_index = none_lookup[tbl["size"]]
 			resource_table["new-game-plus-config-" .. resource .. "-richn"].selected_index = lookup[tbl["richness"]]
 		else
-			log(resource)
 			terrain_table["new-game-plus-config-" .. resource .. "-freq"].selected_index = lookup[tbl["frequency"]]
 			terrain_table["new-game-plus-config-" .. resource .. "-size"].selected_index = none_lookup[tbl["size"]]
 			if terrain_table["new-game-plus-config-" .. resource .. "-richn"] then
@@ -132,6 +134,25 @@ local function use_current_map_gen(player)
 			end
 		end
 	end
+  --cliffs (Doc I made: http://lua-api.factorio.com/latest/Concepts.html#CliffPlacementSettings)
+  local cliff_freq_index_lookup = {
+    [40] = 1,
+    [20] = 2,
+    [10] = 3,
+    [5] = 4,
+    [2.5] = 5
+  }
+  local cliff_size_index_lookup = {
+    [1024] = 1,
+    [40] = 2,
+    [20] = 3,
+    [10] = 4,
+    [5] = 5,
+    [2.5] = 6
+  }
+  local cliff_settings = map_gen_settings.cliff_settings
+  terrain_table["new-game-plus-config-cliffs-freq"].selected_index = cliff_freq_index_lookup[math.floor(cliff_settings.cliff_elevation_interval*10)/10] --floor to 1 digit after the decimal point -> 2.55 => 2.5
+  terrain_table["new-game-plus-config-cliffs-size"].selected_index = cliff_size_index_lookup[math.floor(cliff_settings.cliff_elevation_0*10)/10]
 	-- DIFFICULTY SETTINGS --
 	local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
 	local difficulty_settings = game.difficulty_settings
@@ -354,7 +375,7 @@ local function make_map_gen_settings(player)
 	local starting_area_options = {"very-small", "small", "medium", "big", "very-big"}
 	map_gen_settings.starting_area = starting_area_options[terrain_table["new-game-plus-config-starting-area-size"].selected_index]
 	--biters
-	--terrain (changing cliffs isn't implemented yet/implemented at a different place and idk what the values mean lol)
+	--terrain
 	for _, control in pairs(autoplace_control_prototypes) do
 		if not resources[control.name] then
 			if control.richness then
@@ -371,7 +392,29 @@ local function make_map_gen_settings(player)
 			end
 		end
 	end
-	map_gen_settings.autoplace_controls = autoplace_controls_mine
+  map_gen_settings.autoplace_controls = autoplace_controls_mine
+  --cliffs (Doc I made: http://lua-api.factorio.com/latest/Concepts.html#CliffPlacementSettings)
+  local cliff_freq_lookup = {
+    [1] = 40,
+    [2] = 20,
+    [3] = 10,
+    [4] = 5,
+    [5] = 2.5
+  }
+  local cliff_size_lookup = {
+    [1] = 1024, 
+    [2] = 40,
+    [3] = 20,
+    [4] = 10,
+    [5] = 5,
+    [6] = 2.5
+  }
+  local cliff_settings = {}
+  cliff_settings.name = "cliff"
+  cliff_settings.cliff_elevation_interval = cliff_freq_lookup[terrain_table["new-game-plus-config-cliffs-freq"].selected_index]
+  cliff_settings.cliff_elevation_0 = cliff_size_lookup[terrain_table["new-game-plus-config-cliffs-size"].selected_index]
+  game.print(serpent.line(cliff_settings))
+  map_gen_settings.cliff_settings = cliff_settings
 	return map_gen_settings
 end
 

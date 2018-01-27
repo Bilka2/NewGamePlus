@@ -267,19 +267,28 @@ gui.terrain_options = function(parent_table, freq_options, size_options, richn_o
 	water_size.selected_index = 4
 	parent_table.add{type = "label"}
 	
-	--terrain (changing cliffs isn't implemented yet/implemented at a different place and idk what the values mean lol)
+	--terrain
 	for _, control in pairs(game.autoplace_control_prototypes) do
 		if not resources[control.name] then
 			gui.make_autoplace_options(control.name, parent_table, freq_options, size_options, control.richness and richn_options or false)
 		end
 	end
+  --cliffs
+  gui.make_autoplace_options("cliffs", parent_table, freq_options, size_options, false)
 end
 
 gui.make_autoplace_options = function(name, parent_table, freq_options, size_options, richn_options)
-  parent_table.add{
-		type = "label",
-		caption = {"autoplace-control-names." .. name}
-	}
+  if name ~= "cliffs" then
+    parent_table.add{
+      type = "label",
+      caption = {"autoplace-control-names." .. name}
+    }
+  else
+    parent_table.add{
+      type = "label",
+      caption = {"gui-map-generator.cliffs"}
+    }
+  end
 	local resource_freq = parent_table.add{
 		type = "drop-down",
 		name = "new-game-plus-config-" .. name .. "-freq",
