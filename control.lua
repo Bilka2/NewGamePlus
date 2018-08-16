@@ -448,7 +448,8 @@ local function generate_new_world(player)
   end
   -- create new surface --
   debug_log("Creating surface...")
-  local nauvis_plus = game.create_surface("Nauvis plus " .. global.next_nauvis_number, map_gen_settings)
+  local surface_number = util.get_valid_surface_number(global.next_nauvis_number)
+  local nauvis_plus = game.create_surface("Nauvis plus " .. surface_number, map_gen_settings)
   -- teleport players to new surface --
   for _, player in pairs(game.players) do
     player.teleport({1, 1}, nauvis_plus)
