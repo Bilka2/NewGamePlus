@@ -5,9 +5,9 @@ local DEBUG_MODE = true
 local on_pre_surface_cleared_event = script.generate_event_name()
 remote.add_interface("newgameplus",
 {
-  get_on_pre_surface_cleared_event = function() return on_pre_surface_cleared_event end,
+  get_on_pre_surface_cleared_event = function() return on_pre_surface_cleared_event end
   -- Contains: event.surface_index = index of the surface that will be cleared (all chunks will be deleted)
-}
+})
 
 --[[ How to: Subscribe to mod events
   Basics: You get the event id from a remote interface. You subscribe to the event in on_init and on_load
