@@ -2,7 +2,37 @@ local mod_gui = require("mod-gui")
 local util = require("util")
 local gui = require("gui")
 local DEBUG_MODE = true
+local on_pre_surface_cleared_event = script.generate_event_name()
+remote.add_interface("newgameplus",
+{
+  get_on_pre_surface_cleared_event = function() return on_pre_surface_cleared_event end,
+  -- Contains: event.surface_index = index of the surface that will be cleared (all chunks will be deleted)
+}
 
+--[[ How to: Subscribe to mod events
+  Basics: You get the event id from a remote interface. You subscribe to the event in on_init and on_load
+  
+  Example:
+  
+  script.on_load(function()
+    if remote.interfaces["newgameplus"] then
+      script.on_event(remote.call("newgameplus", "get_on_pre_surface_cleared_event"), function(event)
+        -- Oh no, a surface is going to get cleared. Time to clean up my own entities!
+      end)
+    end
+  end)
+  
+  script.on_init(function()
+    if remote.interfaces["newgameplus"] then
+      script.on_event(remote.call("newgameplus", "get_on_pre_surface_cleared_event"), function(event)
+        -- Oh no, a surface is going to get cleared. Time to clean up my own entities!
+      end)
+    end
+  end)
+  
+ ]]
+
+ 
 local function debug_log(msg)
   if DEBUG_MODE then
     log(msg)
@@ -475,6 +505,7 @@ local function generate_new_world(player)
   debug_log("Removing surfaces...")
   for _,surface in pairs(game.surfaces) do
     if surface.name == "nauvis" then --can't delete nauvis
+      script.raise_event(on_pre_surface_cleared_event, {surface_index = surface.index}) --be nice to other mods
       for chunk in surface.get_chunks() do --so I delete its chunks
         surface.delete_chunk({chunk.x, chunk.y})
       end

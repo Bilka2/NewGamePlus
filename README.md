@@ -10,6 +10,10 @@ Works with mods that add ores or terrain etc. If you want to generate a new worl
 
 Changelog:
 
+2.1.2
+
+* Added custom event so that other mods are notified when I delete nauvis
+
 2.1.1
 
 * Fixed that surface creation would fail under certain circumstances
