@@ -3,10 +3,13 @@ local util = require("util")
 local gui = require("gui")
 local DEBUG_MODE = true
 local on_pre_surface_cleared_event = script.generate_event_name()
+local on_technology_reset_event = script.generate_event_name()
 remote.add_interface("newgameplus",
 {
-  get_on_pre_surface_cleared_event = function() return on_pre_surface_cleared_event end
+  get_on_pre_surface_cleared_event = function() return on_pre_surface_cleared_event end,
   -- Contains: event.surface_index = index of the surface that will be cleared (all chunks will be deleted)
+  get_on_technology_reset_event = function() return on_technology_reset_event end
+  -- Contains: event.force = LuaForce that the technology was reset for
 })
 
 --[[ How to: Subscribe to mod events
@@ -574,6 +577,7 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
             tech.researched = false;
             force.set_saved_technology_progress(tech, 0)
           end
+          script.raise_event(on_technology_reset_event, {force = force})
         end
       end
       if global.use_rso then --doing this here because otherwise ores may spawn on water
