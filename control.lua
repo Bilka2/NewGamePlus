@@ -220,20 +220,6 @@ end
 
 local function generate_new_world(player)
   debug_log("Generating new game plus...")
-  --rso integration
-  debug_log("Looking for RSO...")
-  if remote.interfaces["RSO"] then
-    debug_log("Detected RSO")
-    if remote.interfaces["RSO"]["resetGeneration"] then
-      global.use_rso = true
-    else
-      player.print({"msg.new-game-plus-outdated-rso"})
-      return
-    end
-  else
-    debug_log("No RSO found")
-    global.use_rso = false
-  end
   -- MAP GEN SETTINGS
   debug_log("Making map gen settings...")
   local map_gen_settings = make_map_gen_settings(player)
@@ -252,13 +238,18 @@ local function generate_new_world(player)
   local surface_number = util.get_valid_surface_number(global.next_nauvis_number)
   local nauvis_plus = game.create_surface("Nauvis plus " .. surface_number, map_gen_settings)
   -- teleport players to new surface --
-  for _, player in pairs(game.players) do
-    player.teleport({1, 1}, nauvis_plus)
-    player.force.chart(nauvis_plus, {{player.position.x - 200, player.position.y - 200}, {player.position.x + 200, player.position.y + 200}})
+  for _, plyr in pairs(game.players) do
+    plyr.teleport({1, 1}, nauvis_plus)
+    plyr.force.chart(nauvis_plus, {{plyr.position.x - 200, plyr.position.y - 200}, {plyr.position.x + 200, plyr.position.y + 200}})
   end
   --set spawn
   for _, force in pairs(game.forces) do
     force.set_spawn_position({1,1}, nauvis_plus)
+  end
+  -- rso integration
+  if remote.interfaces["RSO"] then
+    debug_log("Setting RSO starting area...")
+    remote.call("RSO", "addStartLocation", nauvis_plus.map_gen_settings.starting_points[1], player)
   end
   --set whether the tech needs to be reset
   local frame_flow = mod_gui.get_frame_flow(player)
@@ -292,6 +283,9 @@ script.on_event({defines.events.on_gui_click}, function(event)
   local frame_flow = mod_gui.get_frame_flow(player)
   local clicked_name = event.element.name
   if clicked_name == "new-game-plus-toggle-config" then
+    if not frame_flow["new-game-plus-config-frame"] then
+      full_gui_regen(player)
+    end
     frame_flow["new-game-plus-config-frame"].visible = not frame_flow["new-game-plus-config-frame"].visible
     frame_flow["new-game-plus-config-more-frame"].visible = false
   elseif clicked_name == "new-game-plus-more-options" then
@@ -342,12 +336,6 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
           script.raise_event(on_technology_reset_event, {force = force})
         end
       end
-      if global.use_rso then --doing this here because otherwise ores may spawn on water
-        debug_log("Using RSO ore generation")
-        remote.call("RSO", "resetGeneration", surface)
-        remote.call("RSO", "regenerate", false)
-        debug_log("Called RSO resetGeneration and regenerate")
-      end
     end
     if chunk_area.left_top.x == 0 and chunk_area.left_top.y == 32 and chunk_area.right_bottom.x == 32 and chunk_area.right_bottom.y == 64 then
       debug_log("Making grass bridge in second chunk...")
@@ -366,6 +354,7 @@ script.on_configuration_changed(function() --regen gui in case a mod added/remov
       full_gui_regen(player)
     end
   end
+  global.use_rso = nil -- migration from pre 3.0.1
 end)
 
 script.on_event(defines.events.on_player_created, function(event) --create gui for joining player, only if a rocket has been launched
@@ -388,7 +377,6 @@ end)
 
 script.on_init(function()
   global.next_nauvis_number = 1
-  global.use_rso = false
 end)
 
 commands.add_command("ngp-gui", {"msg.new-game-plus-gui-command-help"}, function(event)
