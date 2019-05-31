@@ -30,7 +30,11 @@ util.textfield_to_number_with_error = function(textfield)
 end
 
 util.number_to_string = function(number) -- shows up to 6 decimal places
-  if number < 0.0001 then
+  if number == math.huge then
+    return "inf"
+  elseif number == -math.huge then
+    return "-inf"
+  elseif number < 0.0001 then
     return string.format("%.6f", tostring(number))
   elseif number > 999 then
     if number > 99999 then
