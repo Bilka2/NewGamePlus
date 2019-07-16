@@ -25,28 +25,37 @@ gui.regen = function(player)
     direction = "vertical"
   }
   config_frame.visible = false
-  local config_frame_title_table = config_frame.add{
-    type = "table",
-    name = "new-game-plus-config-frame-title-table",
-    column_count = 3
+  -- it's the top flow of the main window, has title, import and advanced button
+  local config_frame_title_flow = config_frame.add{
+    type = "flow"
   }
-  local config_frame_title = config_frame_title_table.add{
+  config_frame_title_flow.add{
     type = "label",
-    name = "new-game-plus-config-frame-title-label",
     caption = {"gui.new-game-plus-config-caption"},
     style = "frame_title"
   }
-  local look_at_this_element = config_frame_title_table.add{
-    type = "flow"
+  config_frame_title_flow.add{
+    type = "flow",
+    style = "pusher"
   }
-  look_at_this_element.style.horizontally_stretchable = true
-  config_frame_title_table.add{
+  -- map exchange string button
+  config_frame_title_flow.add{
+    type = "sprite-button",
+    name = "new-game-plus-map-exchange-string",
+    style = mod_gui.button_style,
+    tooltip = {"gui-map-generator.import-exchange-string-tt"},
+    sprite = "utility/import_slot"
+  }
+  -- advanced button
+  config_frame_title_flow.add{
     type = "button",
     name = "new-game-plus-more-options",
     style = mod_gui.button_style,
     tooltip = {"gui.new-game-plus-toggle-tooltip", {"gui-map-generator.advanced-tab-title"}},
     caption = {"gui-map-generator.advanced-tab-title"}
   }
+
+  -- advanced window
   local config_more_frame = frame_flow.add{
     type = "frame",
     caption = {"gui-map-generator.advanced-tab-title"},
@@ -64,6 +73,8 @@ gui.regen = function(player)
   }
   map_gen_gui.create(config_subframe)
   gui.make_advanced_settings_gui(config_more_frame)
+
+  -- start button at the bottom
   local start_button_flow = config_frame.add{
     type = "flow",
     direction = "horizontal"
@@ -72,7 +83,6 @@ gui.regen = function(player)
     type = "flow",
     style = "pusher"
   }
-  -- start button at the bottom
   start_button_flow.add{
     type = "button",
     name = "new-game-plus-start-button",
@@ -93,6 +103,13 @@ gui.kill = function(player)
   end
   if frame_flow["new-game-plus-config-more-frame"] then
     frame_flow["new-game-plus-config-more-frame"].destroy()
+  end
+  gui.kill_mes_import_window(player)
+end
+
+gui.kill_mes_import_window = function(player)
+  if player.gui.center["new-game-plus-import-frame"] then
+    player.gui.center["new-game-plus-import-frame"].destroy()
   end
 end
 
@@ -272,6 +289,39 @@ gui.make_difficulty_settings_gui = function(parent)
   }
   technology_multiplier.text = tostring(game.difficulty_settings.technology_price_multiplier)
   technology_multiplier.style.maximal_width = 50
+end
+
+gui.open_mes_import_window = function(player)
+  gui.kill_mes_import_window(player)
+  local frame = player.gui.center.add{
+    type = "frame",
+    name = "new-game-plus-import-frame",
+    direction = "vertical",
+    caption = {"gui.map-exchange-string"}
+  }
+  frame.add{
+    type = "label",
+    caption = {"gui-map-generator.exchange-string-instructions"}
+  }
+  local textbox = frame.add{
+    type = "text-box",
+    name = "new-game-plus-import-text-box",
+  }
+  textbox.style.width = 500
+  textbox.style.height = 250
+  local button_flow = frame.add{
+    type = "flow"
+  }
+  button_flow.add{
+    type = "flow",
+    style = "pusher"
+  }
+  button_flow.add{
+    type = "button",
+    name = "new-game-plus-import-confirm-button",
+    style = "confirm_button",
+    caption = {"gui.confirm"}
+  }
 end
 
 return gui

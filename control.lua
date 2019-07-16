@@ -43,7 +43,7 @@ end
 
 local function full_gui_regen(player)
   gui.regen(player)
-  use_current_map_gen(player)
+  use_current_map_gen(player, player.surface.map_gen_settings, game.difficulty_settings, game.map_settings)
 end
 
 script.on_event(defines.events.on_rocket_launched, function(event)
@@ -81,10 +81,8 @@ local function reset_to_default(player)
   map_settings_gui.pollution_reset_to_defaults(more_config_table)
 end
 
-function use_current_map_gen(player) -- Warning: not local
+function use_current_map_gen(player, map_gen_settings, difficulty_settings, map_settings) -- Warning: not local
   local frame_flow = mod_gui.get_frame_flow(player)
-  local surface = player.surface
-  local map_gen_settings = surface.map_gen_settings
   -- general options --
   local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
   config_options["new-game-plus-peaceful-mode-checkbox"].state = map_gen_settings.peaceful_mode
@@ -97,16 +95,26 @@ function use_current_map_gen(player) -- Warning: not local
 
   -- DIFFICULTY SETTINGS --
   local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
-  local difficulty_settings = game.difficulty_settings
   local difficulty_table = more_config_table["new-game-plus-config-more-difficulty-flow"]["new-game-plus-config-more-difficulty-table"]
   difficulty_table["new-game-plus-recipe-difficulty-drop-down"].selected_index  = difficulty_settings.recipe_difficulty + 1
   difficulty_table["new-game-plus-technology-difficulty-drop-down"].selected_index = difficulty_settings.technology_difficulty + 1
   difficulty_table["new-game-plus-technology-multiplier-textfield"].text = tostring(difficulty_settings.technology_price_multiplier)
   -- MAP SETTINGS --
-  local map_settings = game.map_settings
   map_settings_gui.expansion_set_to_current(more_config_table, map_settings)
   map_settings_gui.evolution_set_to_current(more_config_table, map_settings)
   map_settings_gui.pollution_set_to_current(more_config_table, map_settings)
+end
+
+-- Import map exchange string
+local function import_mes(player)
+  local textbox = player.gui.center["new-game-plus-import-frame"]["new-game-plus-import-text-box"]
+  local status, settings = pcall(game.parse_map_exchange_string, textbox.text)
+  gui.kill_mes_import_window(player)
+  if not status then
+    player.print(settings)
+    return
+  end
+  use_current_map_gen(player, settings.map_gen_settings, settings.map_settings.difficulty_settings, settings.map_settings)
 end
 
 -- WOLRD GEN --
@@ -291,7 +299,7 @@ script.on_event({defines.events.on_gui_click}, function(event)
   elseif clicked_name == "new-game-plus-more-options" then
     frame_flow["new-game-plus-config-more-frame"].visible = not frame_flow["new-game-plus-config-more-frame"].visible
   elseif clicked_name == "new-game-plus-use-current-button" then
-    use_current_map_gen(player)
+    use_current_map_gen(player, player.surface.map_gen_settings, game.difficulty_settings, game.map_settings)
   elseif clicked_name == "new-game-plus-start-button" then
     if not player.admin then
       player.print({"msg.new-game-plus-start-admin-restriction"})
@@ -300,6 +308,10 @@ script.on_event({defines.events.on_gui_click}, function(event)
     generate_new_world(player)
   elseif clicked_name == "new-game-plus-default-button" then
     reset_to_default(player)
+  elseif clicked_name == "new-game-plus-map-exchange-string" then
+    gui.open_mes_import_window(player)
+  elseif clicked_name == "new-game-plus-import-confirm-button" then
+    import_mes(player)
   end
 end)
 

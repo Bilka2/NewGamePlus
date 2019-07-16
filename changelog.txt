@@ -3,6 +3,7 @@ Version: 3.1.0
 Date: 16. 07. 2018
   Minor Features:
     - Used new functions to restrict text fields to numbers only.
+    - Added a button to import max exchange strings.
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.2
 Date: 31. 05. 2018
