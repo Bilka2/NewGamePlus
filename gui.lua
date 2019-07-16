@@ -36,7 +36,6 @@ gui.regen = function(player)
     caption = {"gui.new-game-plus-config-caption"},
     style = "frame_title"
   }
-  config_frame_title.style.top_padding = -8
   local look_at_this_element = config_frame_title_table.add{
     type = "flow"
   }
@@ -55,7 +54,6 @@ gui.regen = function(player)
     direction = "vertical"
   }
   config_more_frame.visible = false
-  -- config_more_frame.style.title_bottom_padding = 8 TODO Bilka
 
   --make gui sections
   gui.make_basic_settings_gui(config_frame)
@@ -124,7 +122,10 @@ gui.make_basic_settings_gui = function(parent_table)
   config_option_table.add{
     type = "textfield",
     name = "new-game-plus-seed-textfield",
-    text = "0"
+    text = "0",
+    numeric = true,
+    allow_decimal = false,
+    allow_negative = false
   }
   config_option_table.add{
     type = "label",
@@ -146,7 +147,10 @@ gui.make_basic_settings_gui = function(parent_table)
   config_option_table.add{
     type = "textfield",
     name = "new-game-plus-width-textfield",
-    text = "0"
+    text = "0",
+    numeric = true,
+    allow_decimal = false,
+    allow_negative = false
   }
   config_option_table.add{
     type = "label",
@@ -168,7 +172,10 @@ gui.make_basic_settings_gui = function(parent_table)
   config_option_table.add{
     type = "textfield",
     name = "new-game-plus-height-textfield",
-    text = "0"
+    text = "0",
+    numeric = true,
+    allow_decimal = false,
+    allow_negative = false
   }
   local button_table = parent_table.add{
     type = "table",
@@ -259,6 +266,9 @@ gui.make_difficulty_settings_gui = function(parent)
   local technology_multiplier = table.add{
     type = "textfield",
     name = "new-game-plus-technology-multiplier-textfield",
+    numeric = true,
+    allow_decimal = true,
+    allow_negative = false
   }
   technology_multiplier.text = tostring(game.difficulty_settings.technology_price_multiplier)
   technology_multiplier.style.maximal_width = 50
