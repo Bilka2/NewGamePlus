@@ -241,24 +241,21 @@ local function generate_new_world(player)
     debug_log("Aborted generating new game plus")
     return
   end
-  -- create new surface --
-  debug_log("Creating surface...")
-  local surface_number = util.get_valid_surface_number(global.next_nauvis_number)
-  local nauvis_plus = game.create_surface("Nauvis plus " .. surface_number, map_gen_settings)
-  -- teleport players to new surface --
+  -- teleport to nauvis --
+  local nauvis = game.surfaces[1]
   for _, plyr in pairs(game.players) do
-    plyr.teleport({1, 1}, nauvis_plus)
-    plyr.force.chart(nauvis_plus, {{plyr.position.x - 200, plyr.position.y - 200}, {plyr.position.x + 200, plyr.position.y + 200}})
+    plyr.teleport({1, 1}, nauvis)
   end
-  --set spawn
+  -- apply map gen settings
+  nauvis.map_gen_settings = map_gen_settings
+  -- clear nauvis so that it can be regenerated, ignore characters
+  nauvis.clear(true)
+  -- chart, set spawn
   for _, force in pairs(game.forces) do
-    force.set_spawn_position({1,1}, nauvis_plus)
+    force.chart(nauvis, {{-200, -200}, {200, 200}})
+    force.set_spawn_position({1,1}, nauvis)
   end
-  -- rso integration
-  if remote.interfaces["RSO"] then
-    debug_log("Setting RSO starting area...")
-    remote.call("RSO", "addStartLocation", nauvis_plus.map_gen_settings.starting_points[1], player)
-  end
+
   --set whether the tech needs to be reset
   local frame_flow = mod_gui.get_frame_flow(player)
   if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-research-checkbox"].state then
@@ -275,18 +272,17 @@ local function generate_new_world(player)
   debug_log("Removing surfaces...")
   for _,surface in pairs(game.surfaces) do
     if surface.name == "nauvis" then --can't delete nauvis
-      surface.clear()
-      debug_log("Deleted nauvis chunks.")
-    elseif not surface.name:find("Factory floor") and (surface.name ~= "Nauvis plus " .. global.next_nauvis_number) then --don't delete factorissimo stuff or the new surface
+      -- we are here. Don't touch
+    elseif not surface.name:find("Factory floor") then --don't delete factorissimo stuff
       game.delete_surface(surface)
     end
   end
-  global.next_nauvis_number = global.next_nauvis_number + 1
+  global.world_generated = true
   global.rocket_launched = false  --we act like no rocket has been launched, so that we can do the whole "launch a satellite and make gui" thing again
   debug_log("New game plus has been generated")
 end
 
-script.on_event({defines.events.on_gui_click}, function(event)
+script.on_event(defines.events.on_gui_click, function(event)
   local player = game.get_player(event.player_index)
   local frame_flow = mod_gui.get_frame_flow(player)
   local clicked_name = event.element.name
@@ -331,10 +327,9 @@ local function make_grass_bridge(from, to, surface) --makes a two tile wide nort
 end
 
 script.on_event(defines.events.on_chunk_generated, function(event) --prevent island spawns (hopefully)
-  if global.next_nauvis_number == 1 then return end
-  local this_nauvis_number = global.next_nauvis_number - 1
+  if not global.world_generated then return end
   local surface = event.surface
-  if surface.name == "Nauvis plus " .. this_nauvis_number then
+  if surface.index == 1 then
     local chunk_area = event.area
     if chunk_area.left_top.x == 0 and chunk_area.left_top.y == 0 and chunk_area.right_bottom.x == 32 and chunk_area.right_bottom.y == 32 then
       debug_log("Making grass bridge in first chunk...")
@@ -367,28 +362,19 @@ script.on_configuration_changed(function() --regen gui in case a mod added/remov
     end
   end
   global.use_rso = nil -- migration from pre 3.0.1
+  if not global.world_generated then
+    global.world_generated = global.next_nauvis_number and global.next_nauvis_number ~= 1 or false -- migration from pre 3.1.0
+  end
 end)
 
 script.on_event(defines.events.on_player_created, function(event) --create gui for joining player, only if a rocket has been launched
   if global.rocket_launched then
     full_gui_regen(game.get_player(event.player_index))
   end
-  --teleport player to the right surface because they always spawn on nauvis
-  if global.next_nauvis_number > 1 then
-    local this_nauvis_number = global.next_nauvis_number - 1
-    local target_surface = game.surfaces["Nauvis plus " .. this_nauvis_number]
-    local player = game.get_player(event.player_index)
-    local pos = target_surface.find_non_colliding_position("player", {1, 1}, 0, 1)
-    if pos then
-      player.teleport(pos, target_surface)
-    else
-      game.print("Can't spawn the player in the new world, there is no space.")
-    end
-  end
 end)
 
 script.on_init(function()
-  global.next_nauvis_number = 1
+  global.world_generated = false
 end)
 
 commands.add_command("ngp-gui", {"msg.new-game-plus-gui-command-help"}, function(event)

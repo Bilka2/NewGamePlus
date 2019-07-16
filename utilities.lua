@@ -84,16 +84,4 @@ util.compare_localized_strings = function(string1, string2)
   return tableutil.compare(string1, string2)
 end
 
-util.get_valid_surface_number = function(next_nauvis_number)
-  if not game.surfaces["Nauvis plus " .. next_nauvis_number] then
-    return next_nauvis_number
-  end
-  for i = 1, 254 do
-    if not game.surfaces["Nauvis plus " .. i] then
-      global.next_nauvis_number = i
-      return i
-    end
-  end
-end
-
 return util
