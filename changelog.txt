@@ -1,23 +1,23 @@
 ---------------------------------------------------------------------------------------------------
 Version: 3.1.0
-Date: 16. 07. 2018
+Date: 16. 07. 2019
   Minor Features:
     - Used new functions to restrict text fields to numbers only.
     - Added a button to import max exchange strings.
     - Changed to reuse nauvis instead of creating its own surface, improves mod compatibility.
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.2
-Date: 31. 05. 2018
+Date: 31. 05. 2019
   Bugfixes:
     - Fixed issue related to division by 0.
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.1
-Date: 29. 05. 2018
+Date: 29. 05. 2019
   Minor Features:
     - Fixed RSO compatibility.
 ---------------------------------------------------------------------------------------------------
 Version: 3.0.0
-Date: 28. 05. 2018
+Date: 28. 05. 2019
   Major Features:
     - Updated for 0.17.
 ---------------------------------------------------------------------------------------------------
