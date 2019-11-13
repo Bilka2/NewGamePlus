@@ -5,10 +5,14 @@ local map_gen_gui = require("map_gen_settings_gui")
 local map_settings_gui = require("map_settings_gui")
 local DEBUG_MODE = true
 local on_technology_reset_event = script.generate_event_name()
+local on_post_new_game_plus_event = script.generate_event_name()
+
 remote.add_interface("newgameplus",
 {
-  get_on_technology_reset_event = function() return on_technology_reset_event end
+  get_on_technology_reset_event = function() return on_technology_reset_event end,
   -- Contains: event.force = LuaForce that the technology was reset for
+  get_on_post_new_game_plus_event = function() return on_post_new_game_plus_event end -- called after everything is done to create the new game plus
+  -- Contains: event.tech_reset = boolean for whether technologies were reset
 })
 
 --[[ How to: Subscribe to mod events
@@ -256,13 +260,23 @@ local function generate_new_world(player)
     force.set_spawn_position({1,1}, nauvis)
   end
 
-  --set whether the tech needs to be reset
+  nauvis.request_to_generate_chunks({0,0},1)
+  nauvis.force_generate_chunk_requests()
+
+  --reset tech
   local frame_flow = mod_gui.get_frame_flow(player)
+  local tech_reset = false
   if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-research-checkbox"].state then
-    global.tech_reset = true
-  else
-    global.tech_reset = false
-  end
+    tech_reset = true
+    for _, force in pairs(game.forces) do
+      for _, tech in pairs(force.technologies) do
+        tech.researched = false;
+        force.set_saved_technology_progress(tech, 0)
+      end
+      script.raise_event(on_technology_reset_event, {force = force})
+    end
+  end  
+  
   --kill the gui, it's not needed and should not exist in the background
   debug_log("Destroying the gui...")
   for _, player in pairs(game.players) do
@@ -271,7 +285,7 @@ local function generate_new_world(player)
   --destroy the other surfaces
   debug_log("Removing surfaces...")
   for _,surface in pairs(game.surfaces) do
-    if surface.name == "nauvis" then --can't delete nauvis
+    if surface.name == "nauvis" then
       -- we are here. Don't touch
     elseif not surface.name:find("Factory floor") then --don't delete factorissimo stuff
       game.delete_surface(surface)
@@ -279,7 +293,8 @@ local function generate_new_world(player)
   end
   global.world_generated = true
   global.rocket_launched = false  --we act like no rocket has been launched, so that we can do the whole "launch a satellite and make gui" thing again
-  debug_log("New game plus has been generated")
+  debug_log("New game plus has been generated, raising event")
+  script.raise_event(on_post_new_game_plus_event, {tech_reset = tech_reset})
 end
 
 script.on_event(defines.events.on_gui_click, function(event)
@@ -334,16 +349,6 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
     if chunk_area.left_top.x == 0 and chunk_area.left_top.y == 0 and chunk_area.right_bottom.x == 32 and chunk_area.right_bottom.y == 32 then
       debug_log("Making grass bridge in chunk...") -- island spawns are so rare now that I only make a bridge in the first chunk
       make_grass_bridge(0, 32, surface)
-      if global.tech_reset then --tech reset on chunk gen because then the spilling works correctly
-        for _, force in pairs(game.forces) do
-          for _, tech in pairs(force.technologies) do
-            tech.researched = false;
-            force.set_saved_technology_progress(tech, 0)
-          end
-          script.raise_event(on_technology_reset_event, {force = force})
-        end
-        global.tech_reset = false
-      end
       global.world_generated = false
     end
   end
@@ -356,6 +361,7 @@ script.on_configuration_changed(function() --regen gui in case a mod added/remov
     end
   end
   global.use_rso = nil -- migration from pre 3.0.1
+  global.tech_reset = nil -- migration from pre 3.1.2
   if not global.world_generated then
     global.world_generated = global.next_nauvis_number and global.next_nauvis_number ~= 1 or false -- migration from pre 3.1.0
   end

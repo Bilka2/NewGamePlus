@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.1.2
+Date: 13. 11. 2019
+  Minor Features:
+    - Added custom event so that other mods are notified after the new game plus is created.
+---------------------------------------------------------------------------------------------------
 Version: 3.1.1
 Date: 13. 11. 2019
   Bugfixes:
