@@ -332,7 +332,7 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
   if surface.index == 1 then
     local chunk_area = event.area
     if chunk_area.left_top.x == 0 and chunk_area.left_top.y == 0 and chunk_area.right_bottom.x == 32 and chunk_area.right_bottom.y == 32 then
-      debug_log("Making grass bridge in first chunk...")
+      debug_log("Making grass bridge in chunk...") -- island spawns are so rare now that I only make a bridge in the first chunk
       make_grass_bridge(0, 32, surface)
       if global.tech_reset then --tech reset on chunk gen because then the spilling works correctly
         for _, force in pairs(game.forces) do
@@ -342,15 +342,9 @@ script.on_event(defines.events.on_chunk_generated, function(event) --prevent isl
           end
           script.raise_event(on_technology_reset_event, {force = force})
         end
+        global.tech_reset = false
       end
-    end
-    if chunk_area.left_top.x == 0 and chunk_area.left_top.y == 32 and chunk_area.right_bottom.x == 32 and chunk_area.right_bottom.y == 64 then
-      debug_log("Making grass bridge in second chunk...")
-      make_grass_bridge(33, 64, surface)
-    end
-    if chunk_area.left_top.x == 0 and chunk_area.left_top.y == 64 and chunk_area.right_bottom.x == 32 and chunk_area.right_bottom.y == 96 then
-      debug_log("Making grass bridge in third chunk...")
-      make_grass_bridge(65, 95, surface)
+      global.world_generated = false
     end
   end
 end)

@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 3.1.1
+Date: 13. 11. 2019
+  Bugfixes:
+    - Fixed that it was not detected correctly whether a new world had been generated.
+---------------------------------------------------------------------------------------------------
 Version: 3.1.0
 Date: 16. 07. 2019
   Minor Features:
