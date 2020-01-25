@@ -6,4 +6,4 @@ Enabled the mod option to be able to run the ngp-gui command. Then simply type /
 
 The above processes can be repeated an infinite amount of times. Please know that it is not possible to go back to your old world(s)! Pressing the start button might also freeze your game for up to a few minutes. That's fine. It'll unfreeze eventually.
 
-Works with mods that add ores or terrain etc. If you want to generate a new world with them, first enable them, then start the new game plus, not the other way around. Also works with RSO.
+Works with mods that add ores or terrain etc. If you want to generate a new world with them, first enable them, then start the new game plus, not the other way around.
