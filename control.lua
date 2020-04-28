@@ -4,6 +4,20 @@ local gui = require("gui")
 local map_gen_gui = require("map_gen_settings_gui")
 local map_settings_gui = require("map_settings_gui")
 local DEBUG_MODE = true
+
+local no_delete_surfaces =
+{
+  ["Foenestra"] = true --don't delete special Space exploration surface (requested by Earendel)
+}
+
+local no_delete_surface_patterns =
+{
+  ["Factory floor"] = true, --don't delete factorissimo stuff
+  --don't delete mobile factory surfaces (requested by Honktown)
+  ["ControlRoom"] = true,
+  ["mfSurface"] = true
+}
+
 local on_technology_reset_event = script.generate_event_name()
 local on_post_new_game_plus_event = script.generate_event_name()
 
@@ -285,9 +299,10 @@ local function generate_new_world(player)
   --destroy the other surfaces
   debug_log("Removing surfaces...")
   for _,surface in pairs(game.surfaces) do
-    if surface.name == "nauvis" then
+    local name = surface.name
+    if name == "nauvis" then
       -- we are here. Don't touch
-    elseif not surface.name:find("Factory floor") then --don't delete factorissimo stuff
+    elseif not (no_delete_surfaces[name] or util.str_contains_any_from_table(name, no_delete_surface_patterns)) then 
       game.delete_surface(surface)
     end
   end

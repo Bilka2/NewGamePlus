@@ -66,8 +66,8 @@ util.get_relevant_noise_expressions = function()
   return expressions
 end
 
-util.add_info_icon_to_string = function(string)
-  return {"", string, " [img=info]"}
+util.add_info_icon_to_string = function(str)
+  return {"", str, " [img=info]"}
 end
 
 util.get_possible_noise_expression_properties = function()
@@ -82,6 +82,16 @@ util.compare_localized_strings = function(string1, string2)
     string2 = {"", string2}
   end
   return tableutil.compare(string1, string2)
+end
+
+-- haystack is a string, needles is a table with key/values pairs of string = true. The value is ignored.
+util.str_contains_any_from_table = function(haystack, needles)
+  for needle in pairs(needles) do
+    if haystack:find(needle) then
+      return true
+    end
+  end
+  return false
 end
 
 return util
