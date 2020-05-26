@@ -7,7 +7,8 @@ local DEBUG_MODE = true
 
 local no_delete_surfaces =
 {
-  ["Foenestra"] = true --don't delete special Space exploration surface (requested by Earendel)
+  ["Foenestra"] = true, --don't delete special Space exploration surface (requested by Earendel)
+  ["nauvis"] = true --we are here. Don't touch
 }
 
 local no_delete_surface_patterns =
@@ -300,9 +301,7 @@ local function generate_new_world(player)
   debug_log("Removing surfaces...")
   for _,surface in pairs(game.surfaces) do
     local name = surface.name
-    if name == "nauvis" then
-      -- we are here. Don't touch
-    elseif not (no_delete_surfaces[name] or util.str_contains_any_from_table(name, no_delete_surface_patterns)) then 
+    if not (no_delete_surfaces[name] or util.str_contains_any_from_table(name, no_delete_surface_patterns)) then 
       game.delete_surface(surface)
     end
   end
