@@ -5,5 +5,13 @@
   "title": "New Game+",
   "author": "Bilka",
   "homepage": "https://forums.factorio.com/viewtopic.php?f=92&t=52712",
-  "description": "Allows you to start a new game plus once you launch a rocket (or run a command). Generate a new world, but carry over an inventory full of items and your research."
+  "description": "Allows you to start a new game plus once you launch a rocket (or run a command). Generate a new world, but carry over an inventory full of items and your research.",
+  "package":
+  { 
+    "scripts":
+    {
+      "prepackage": "./scripts/extract_changes.sh",
+      "postpublish": "./scripts/github_release.sh"
+    }
+  }
 }
