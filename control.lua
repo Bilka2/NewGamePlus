@@ -130,6 +130,7 @@ local function import_mes(player)
   local status, settings = pcall(game.parse_map_exchange_string, textbox.text)
   gui.kill_mes_import_window(player)
   if not status then
+    player.print({"gui-map-generator.error-importing-exchange-string"})
     player.print(settings)
     return
   end
@@ -164,19 +165,19 @@ local function change_map_settings(player)
   local status, enemy_expansion = pcall(map_settings_gui.expansion_read, more_config_table)
   if not status then
     player.print(enemy_expansion)
-    player.print({"msg.change-map-settings-apply-failed"})
+    player.print({"msg.new-game-plus-apply-failed"})
     return false
   end
   local status2, enemy_evolution = pcall(map_settings_gui.evolution_read, more_config_table)
   if not status2 then
     player.print(enemy_evolution)
-    player.print({"msg.change-map-settings-apply-failed"})
+    player.print({"msg.new-game-plus-apply-failed"})
     return false
   end
   local status3, pollution = pcall(map_settings_gui.pollution_read, more_config_table)
   if not status3 then
     player.print(pollution)
-    player.print({"msg.change-map-settings-apply-failed"})
+    player.print({"msg.new-game-plus-apply-failed"})
     return false
   end
 
@@ -207,7 +208,7 @@ local function make_map_gen_settings(player)
   local status, map_gen_settings = pcall(map_gen_gui.read, frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-subframe"])
   if not status then
     player.print(map_gen_settings)
-    player.print({"msg.change-map-settings-apply-failed"})
+    player.print({"msg.new-game-plus-apply-failed"})
     return
   end
 
