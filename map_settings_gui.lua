@@ -230,7 +230,6 @@ map_settings_gui.evolution_read = function(parent)
   local table = parent[ENTIRE_PREFIX .. WIDGET_PREFIX .. "flow"][ENTIRE_PREFIX .. WIDGET_PREFIX .. "table"]
   local enemy_evolution = {}
 
-
   enemy_evolution.enabled = table[ENTIRE_PREFIX .. WIDGET_PREFIX .. "checkbox"].state
   -- Warning: Below is excluded only here, not in change map settings
   -- enemy_evolution.evolution_factor = util.check_bounds(util.textfield_to_number(table[ENTIRE_PREFIX .. WIDGET_PREFIX .. "factor-textfield"]),

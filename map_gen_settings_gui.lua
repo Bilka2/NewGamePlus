@@ -8,13 +8,13 @@ map_gen_gui.create = function(parent)
   local frame1 = parent.add{
     type = "frame",
     direction = "vertical",
-    style = "b_inner_frame",
+    style = "frame_in_deep_frame", -- TODO Bilka check ngp compatiblity. Old style: b_inner_frame
     name = ENTIRE_PREFIX .. "gui-frame-1"
   }
   local frame2 = parent.add{
     type = "frame",
     direction = "vertical",
-    style = "b_inner_frame",
+    style = "frame_in_deep_frame", -- TODO Bilka check ngp compatiblity. Old style: b_inner_frame
     name = ENTIRE_PREFIX .. "gui-frame-2"
   }
 
@@ -27,6 +27,7 @@ map_gen_gui.create = function(parent)
   resource_scroll_pane.style.maximal_height = 300
   map_gen_gui.create_resource_table(resource_scroll_pane)
   map_gen_gui.create_enemies_table(frame1)
+
 
   map_gen_gui.create_expression_selectors(map_gen_gui.create_expression_selectors_parent(frame2))
   local terrain_scroll_pane = frame2.add{
@@ -341,7 +342,8 @@ map_gen_gui.reset_to_defaults = function(parent)
   local cliffs_table = parent[ENTIRE_PREFIX .. "gui-frame-2"][ENTIRE_PREFIX .."cliffs-table"]
 
   -- expression selectors
-  -- making these defaults work with existing GUI that may or may not have more or less dropdowns than the default sounds like a nightmare. So let's just recreate it.
+  -- Making these defaults work with existing GUI that may or may not have more or less dropdowns than the default sounds like a nightmare.
+  --   So let's just recreate it.
   expression_selectors_flow.clear()
   map_gen_gui.create_expression_selectors(expression_selectors_flow)
 
@@ -391,32 +393,39 @@ map_gen_gui.set_to_current = function(parent, map_gen_settings)
   local cliff_settings = map_gen_settings.cliff_settings
 
   -- expression selectors
-  local possible_properties = util.get_possible_noise_expression_properties()
-  local relevant_noise_expressions = util.get_relevant_noise_expressions()
-  local valid_named_noise_expressions = game.named_noise_expressions
-  for _, property in pairs(possible_properties) do
-    local selected_expression = property_expression_names[property]
-    if selected_expression then
-      local noise_expressions_list_item
-      if valid_named_noise_expressions[selected_expression] then -- proper noise expression, not just some number
-        noise_expressions_list_item = {"noise-expression." .. selected_expression}
-      else
-        noise_expressions_list_item = selected_expression -- number that is really a string. we just use it directly
+  -- The default selected expression is omitted from property_expression_names.
+  --   So to make sure we're at current, reset to default first and then apply the changes from property_expression_names.
+  expression_selectors_flow.clear()
+  map_gen_gui.create_expression_selectors(expression_selectors_flow)
+
+  if property_expression_names then -- can be missing when reading from preset
+    local possible_properties = util.get_possible_noise_expression_properties()
+    local relevant_noise_expressions = util.get_relevant_noise_expressions()
+    local valid_named_noise_expressions = game.named_noise_expressions
+    for property in pairs(possible_properties) do
+      local selected_expression = property_expression_names[property]
+      if selected_expression then
+        local noise_expressions_list_item
+        if valid_named_noise_expressions[selected_expression] then -- proper noise expression, not just some number
+          noise_expressions_list_item = {"noise-expression." .. selected_expression}
+        else
+          noise_expressions_list_item = selected_expression -- number that is really a string. we just use it directly
+        end
+        local property_flow = expression_selectors_flow[ENTIRE_PREFIX .. property .. "-flow"]
+        if not property_flow then
+          property_flow = map_gen_gui.make_expression_selector(property, relevant_noise_expressions[property], expression_selectors_flow, true)
+        end
+        local dropdown = property_flow[ENTIRE_PREFIX .. property .. "-drop-down"]
+        map_gen_gui.select_in_dropdown_or_add_and_select(noise_expressions_list_item, dropdown) -- select (optionally add) the item
       end
-      local property_flow = expression_selectors_flow[ENTIRE_PREFIX .. property .. "-flow"]
-      if not property_flow then
-        property_flow = map_gen_gui.make_expression_selector(property, relevant_noise_expressions[property], expression_selectors_flow, true)
-      end
-      local dropdown = property_flow[ENTIRE_PREFIX .. property .. "-drop-down"]
-      map_gen_gui.select_in_dropdown_or_add_and_select(noise_expressions_list_item, dropdown) -- select (optionally add) the item
     end
   end
 
   -- water stuff
-  controls_with_scale_table[ENTIRE_PREFIX .. "water-freq"].text = util.number_to_string(1 / map_gen_settings.terrain_segmentation) -- inverse
-  controls_with_scale_table[ENTIRE_PREFIX .. "water-size"].text = util.number_to_string(map_gen_settings.water)
+  controls_with_scale_table[ENTIRE_PREFIX .. "water-freq"].text = util.number_to_string(1 / (util.map_gen_size_to_number(map_gen_settings.terrain_segmentation) or 1)) -- inverse
+  controls_with_scale_table[ENTIRE_PREFIX .. "water-size"].text = util.number_to_string(util.map_gen_size_to_number(map_gen_settings.water) or 1)
   -- starting area
-  enemies_table[ENTIRE_PREFIX .. "starting-area-size"].text = util.number_to_string(map_gen_settings.starting_area)
+  enemies_table[ENTIRE_PREFIX .. "starting-area-size"].text = util.number_to_string(util.map_gen_size_to_number(map_gen_settings.starting_area) or 1)
 
   -- resources and terrain and enemies
   local valid_autoplace_controls = game.autoplace_control_prototypes
@@ -424,31 +433,34 @@ map_gen_gui.set_to_current = function(parent, map_gen_settings)
     for name, autoplace_control in pairs(autoplace_controls) do
       if valid_autoplace_controls[name] then
         if valid_autoplace_controls[name].category == "resource" then
-          resource_table[ENTIRE_PREFIX .. name .. "-freq"].text = util.number_to_string(autoplace_control["frequency"])
-          resource_table[ENTIRE_PREFIX .. name .. "-size"].text = util.number_to_string(autoplace_control["size"])
-          resource_table[ENTIRE_PREFIX .. name .. "-richn"].text = util.number_to_string(autoplace_control["richness"])
+          resource_table[ENTIRE_PREFIX .. name .. "-freq"].text = util.number_to_string(util.map_gen_size_to_number(autoplace_control["frequency"]) or 1)
+          resource_table[ENTIRE_PREFIX .. name .. "-size"].text = util.number_to_string(util.map_gen_size_to_number(autoplace_control["size"]) or 1)
+          resource_table[ENTIRE_PREFIX .. name .. "-richn"].text = util.number_to_string(util.map_gen_size_to_number(autoplace_control["richness"]) or 1)
         elseif valid_autoplace_controls[name].category == "terrain" and name ~= "planet-size" then -- planet size is a space exploration thing, we don't want the player to change it
-          controls_with_scale_table[ENTIRE_PREFIX .. name .. "-freq"].text = util.number_to_string(1 / autoplace_control["frequency"]) -- inverse
-          controls_with_scale_table[ENTIRE_PREFIX .. name .. "-size"].text = util.number_to_string(autoplace_control["size"])
+          controls_with_scale_table[ENTIRE_PREFIX .. name .. "-freq"].text = util.number_to_string(1 / (util.map_gen_size_to_number(autoplace_control["frequency"]) or 1)) -- inverse
+          controls_with_scale_table[ENTIRE_PREFIX .. name .. "-size"].text = util.number_to_string(util.map_gen_size_to_number(autoplace_control["size"]) or 1)
         elseif valid_autoplace_controls[name].category == "enemy" then
-          enemies_table[ENTIRE_PREFIX .. name .. "-freq"].text = util.number_to_string(autoplace_control["frequency"])
-          enemies_table[ENTIRE_PREFIX .. name .. "-size"].text = util.number_to_string(autoplace_control["size"])
+          enemies_table[ENTIRE_PREFIX .. name .. "-freq"].text = util.number_to_string(util.map_gen_size_to_number(autoplace_control["frequency"]) or 1)
+          enemies_table[ENTIRE_PREFIX .. name .. "-size"].text = util.number_to_string(util.map_gen_size_to_number(autoplace_control["size"]) or 1)
         end
       end
     end
   end
 
   -- moisture and terrain type
-  climate_table[ENTIRE_PREFIX .. "moisture-freq"].text = 1 / (property_expression_names["control-setting:moisture:frequency:multiplier"] or "1") -- inverse
-  climate_table[ENTIRE_PREFIX .. "moisture-size"].text = property_expression_names["control-setting:moisture:bias"] or "0"
-  climate_table[ENTIRE_PREFIX .. "aux-freq"].text = 1 / (property_expression_names["control-setting:aux:frequency:multiplier"] or "1") -- inverse
-  climate_table[ENTIRE_PREFIX .. "aux-size"].text = property_expression_names["control-setting:aux:bias"] or "0"
+  if property_expression_names then -- can be missing when reading from preset
+    climate_table[ENTIRE_PREFIX .. "moisture-freq"].text = util.number_to_string(1 / (property_expression_names["control-setting:moisture:frequency:multiplier"] or 1)) -- inverse
+    climate_table[ENTIRE_PREFIX .. "moisture-size"].text = property_expression_names["control-setting:moisture:bias"] or "0"
+    climate_table[ENTIRE_PREFIX .. "aux-freq"].text = util.number_to_string(1 / (property_expression_names["control-setting:aux:frequency:multiplier"] or 1)) -- inverse
+    climate_table[ENTIRE_PREFIX .. "aux-size"].text = property_expression_names["control-setting:aux:bias"] or "0"
+  end
 
   -- cliffs
-  cliffs_table[ENTIRE_PREFIX .. "cliffs-freq"].text = util.number_to_string(40 / cliff_settings.cliff_elevation_interval) -- inverse with 40
-  cliffs_table[ENTIRE_PREFIX .. "cliffs-size"].text = util.number_to_string(cliff_settings.richness)
+  if cliff_settings then -- can be missing when reading from preset
+    cliffs_table[ENTIRE_PREFIX .. "cliffs-freq"].text = util.number_to_string(40 / (cliff_settings.cliff_elevation_interval or 40)) -- inverse with 40
+    cliffs_table[ENTIRE_PREFIX .. "cliffs-size"].text = util.number_to_string(util.map_gen_size_to_number(cliff_settings.richness) or 1)
+  end
 end
-
 
 map_gen_gui.select_in_dropdown_or_add_and_select = function(item_to_select, dropdown)
   local items = dropdown.items
@@ -479,7 +491,7 @@ map_gen_gui.read = function(parent)
 
   -- expression selectors
   local possible_properties = util.get_possible_noise_expression_properties()
-  for _, property in pairs(possible_properties) do
+  for property in pairs(possible_properties) do
     local property_flow = expression_selectors_flow[ENTIRE_PREFIX .. property .. "-flow"]
     if property_flow then
       local dropdown = property_flow[ENTIRE_PREFIX .. property .. "-drop-down"]
@@ -540,6 +552,5 @@ map_gen_gui.read = function(parent)
   map_gen_settings.cliff_settings = cliff_settings_mine
   return map_gen_settings
 end
-
 
 return map_gen_gui

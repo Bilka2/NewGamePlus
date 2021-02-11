@@ -81,9 +81,9 @@ local function reset_to_default(player)
   local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
   config_options["new-game-plus-reset-evo-checkbox"].state = true
   config_options["new-game-plus-peaceful-mode-checkbox"].state = false
-  config_options["new-game-plus-seed-textfield"].text = 0
-  config_options["new-game-plus-width-textfield"].text = 0
-  config_options["new-game-plus-height-textfield"].text = 0
+  config_options["new-game-plus-seed-textfield"].text = "0"
+  config_options["new-game-plus-width-textfield"].text = "0"
+  config_options["new-game-plus-height-textfield"].text = "0"
 
   -- MAP GEN SETTINGS --
   map_gen_gui.reset_to_defaults(frame_flow["new-game-plus-config-frame"]["new-game-plus-config-subframe"])
@@ -143,7 +143,7 @@ local function change_map_settings(player)
   --Reset evolution
   if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-evo-checkbox"].state then
     for _, force in pairs(game.forces) do
-      force.evolution_factor = 0
+      force.reset_evolution()
     end
   end
   --Difficulty
