@@ -38,22 +38,31 @@ gui.regen = function(player)
     type = "flow",
     style = "pusher"
   }
-  -- map exchange string button
-  config_frame_title_flow.add{
-    type = "sprite-button",
-    name = "new-game-plus-map-exchange-string",
-    style = mod_gui.button_style,
-    tooltip = {"gui-map-generator.import-exchange-string-tt"},
-    sprite = "utility/import_slot"
-  }
   -- advanced button
-  config_frame_title_flow.add{
+  local advanced_button = config_frame_title_flow.add{
     type = "button",
     name = "new-game-plus-more-options",
     style = mod_gui.button_style,
     tooltip = {"gui.new-game-plus-toggle-tooltip", {"gui-map-generator.advanced-tab-title"}},
     caption = {"gui-map-generator.advanced-tab-title"}
   }
+  advanced_button.style.height = 24
+  advanced_button.style.bottom_padding = 4
+
+  --make main gui sections
+  local inner_frame = config_frame.add{
+    type = "frame",
+    direction = "vertical",
+    style = "deep_frame",
+    name = "new-game-plus-config-inner-frame"
+  }
+  gui.make_basic_settings_gui(inner_frame)
+  local config_subframe = inner_frame.add{
+    type = "flow",
+    name = "new-game-plus-config-subframe",
+    direction = "horizontal"
+  }
+  map_gen_gui.create(config_subframe)
 
   -- advanced window
   local config_more_frame = frame_flow.add{
@@ -63,15 +72,6 @@ gui.regen = function(player)
     direction = "vertical"
   }
   config_more_frame.visible = false
-
-  --make gui sections
-  gui.make_basic_settings_gui(config_frame)
-  local config_subframe = config_frame.add{
-    type = "flow",
-    name = "new-game-plus-config-subframe",
-    direction = "horizontal"
-  }
-  map_gen_gui.create(config_subframe)
   gui.make_advanced_settings_gui(config_more_frame)
 
   -- start button at the bottom
@@ -79,6 +79,7 @@ gui.regen = function(player)
     type = "flow",
     direction = "horizontal"
   }
+  start_button_flow.style.top_padding = 8
   start_button_flow.add{
     type = "flow",
     style = "pusher"
@@ -113,12 +114,50 @@ gui.kill_mes_import_window = function(player)
   end
 end
 
-gui.make_basic_settings_gui = function(parent_table)
-  local config_option_table = parent_table.add{
+gui.make_basic_settings_gui = function(parent)
+  do --subheader
+    local frame = parent.add{
+      type = "frame",
+      direction = "horizontal",
+      style = "subheader_frame"
+    }
+    frame.add{
+      type = "flow",
+      direction = "horizontal",
+      style = "pusher"
+    }
+    -- map exchange string button
+    frame.add{
+      type = "sprite-button",
+      name = "new-game-plus-map-exchange-string",
+      style = "tool_button",
+      tooltip = {"gui-map-generator.import-exchange-string-tt"},
+      sprite = "utility/import_slot"
+    }
+    -- tool buttons
+    frame.add{
+      type = "sprite-button",
+      name = "new-game-plus-use-current-button",
+      style = "tool_button",
+      sprite = "utility/refresh",
+      tooltip = {"gui.new-game-plus-use-current-button-caption"}
+    }
+    frame.add{
+      type = "sprite-button",
+      name = "new-game-plus-default-button",
+      style = "tool_button_red",
+      sprite = "utility/reset",
+      tooltip = {"gui.new-game-plus-default-button-caption"}
+    }
+  end
+
+  local config_option_table = parent.add{
     type = "table",
     name = "new-game-plus-config-option-table",
     column_count = 5
   }
+  config_option_table.style.left_padding = 8
+  config_option_table.style.right_padding = 8
   config_option_table.add{
     type = "label",
     caption = {"gui.new-game-plus-reset-evo-caption"}
@@ -193,23 +232,6 @@ gui.make_basic_settings_gui = function(parent_table)
     numeric = true,
     allow_decimal = false,
     allow_negative = false
-  }
-  local button_table = parent_table.add{
-    type = "table",
-    name = "new-game-plus-config-button-table",
-    column_count = 2
-  }
-  button_table.add{
-    type = "button",
-    name = "new-game-plus-use-current-button",
-    style = mod_gui.button_style,
-    caption = {"gui.new-game-plus-use-current-button-caption"}
-  }
-  button_table.add{
-    type = "button",
-    name = "new-game-plus-default-button",
-    style = mod_gui.button_style,
-    caption = {"gui.new-game-plus-default-button-caption"}
   }
 end
 

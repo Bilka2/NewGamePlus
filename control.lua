@@ -78,7 +78,7 @@ end)
 local function reset_to_default(player)
   local frame_flow = mod_gui.get_frame_flow(player)
   -- general options --
-  local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
+  local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-option-table"]
   config_options["new-game-plus-reset-evo-checkbox"].state = true
   config_options["new-game-plus-peaceful-mode-checkbox"].state = false
   config_options["new-game-plus-seed-textfield"].text = "0"
@@ -86,7 +86,7 @@ local function reset_to_default(player)
   config_options["new-game-plus-height-textfield"].text = "0"
 
   -- MAP GEN SETTINGS --
-  map_gen_gui.reset_to_defaults(frame_flow["new-game-plus-config-frame"]["new-game-plus-config-subframe"])
+  map_gen_gui.reset_to_defaults(frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-subframe"])
 
   -- DIFFICULTY SETTINGS --
   local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
@@ -103,14 +103,14 @@ end
 function use_current_map_gen(player, map_gen_settings, difficulty_settings, map_settings) -- Warning: not local
   local frame_flow = mod_gui.get_frame_flow(player)
   -- general options --
-  local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
+  local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-option-table"]
   config_options["new-game-plus-peaceful-mode-checkbox"].state = map_gen_settings.peaceful_mode
   config_options["new-game-plus-seed-textfield"].text = tostring(map_gen_settings.seed)
   config_options["new-game-plus-width-textfield"].text = tostring(map_gen_settings.width == 2000000 and 0 or map_gen_settings.width) --show 0 if it was set to "infinite"
   config_options["new-game-plus-height-textfield"].text = tostring(map_gen_settings.height == 2000000 and 0 or map_gen_settings.height)
 
   -- MAP GEN SETTINGS --
-  map_gen_gui.set_to_current(frame_flow["new-game-plus-config-frame"]["new-game-plus-config-subframe"], map_gen_settings)
+  map_gen_gui.set_to_current(frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-subframe"], map_gen_settings)
 
   -- DIFFICULTY SETTINGS --
   local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
@@ -141,7 +141,7 @@ local function change_map_settings(player)
   local frame_flow = mod_gui.get_frame_flow(player)
   local more_config_table = frame_flow["new-game-plus-config-more-frame"]["new-game-plus-config-more-frame"]["new-game-plus-config-more-table"]
   --Reset evolution
-  if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-evo-checkbox"].state then
+  if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-evo-checkbox"].state then
     for _, force in pairs(game.forces) do
       force.reset_evolution()
     end
@@ -200,11 +200,11 @@ end
 
 local function make_map_gen_settings(player)
   local frame_flow = mod_gui.get_frame_flow(player)
-  local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]
+  local config_options = frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-option-table"]
   local map_gen_settings = {}
 
   -- overall settings
-  local status, map_gen_settings = pcall(map_gen_gui.read, frame_flow["new-game-plus-config-frame"]["new-game-plus-config-subframe"])
+  local status, map_gen_settings = pcall(map_gen_gui.read, frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-subframe"])
   if not status then
     player.print(map_gen_settings)
     player.print({"msg.change-map-settings-apply-failed"})
@@ -281,7 +281,7 @@ local function generate_new_world(player)
   --reset tech
   local frame_flow = mod_gui.get_frame_flow(player)
   local tech_reset = false
-  if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-research-checkbox"].state then
+  if frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-option-table"]["new-game-plus-reset-research-checkbox"].state then
     tech_reset = true
     for _, force in pairs(game.forces) do
       for _, tech in pairs(force.technologies) do
