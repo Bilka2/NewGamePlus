@@ -1,7 +1,7 @@
-local mod_gui = require("mod-gui")
-local util = require("utilities")
-local map_gen_gui = require("map_gen_settings_gui")
-local map_settings_gui = require("map_settings_gui")
+local mod_gui = require("__core__/lualib/mod-gui")
+local util = require("__NewGamePlus__/utilities")
+local map_gen_gui = require("__NewGamePlus__/map_gen_settings_gui")
+local map_settings_gui = require("__NewGamePlus__/map_settings_gui")
 
 local gui = {}
 

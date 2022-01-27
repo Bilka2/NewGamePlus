@@ -1,8 +1,8 @@
-local mod_gui = require("mod-gui")
-local util = require("utilities")
-local gui = require("gui")
-local map_gen_gui = require("map_gen_settings_gui")
-local map_settings_gui = require("map_settings_gui")
+local mod_gui = require("__core__/lualib/mod-gui")
+local util = require("__NewGamePlus__/utilities")
+local gui = require("__NewGamePlus__/gui")
+local map_gen_gui = require("__NewGamePlus__/map_gen_settings_gui")
+local map_settings_gui = require("__NewGamePlus__/map_settings_gui")
 local DEBUG_MODE = true
 
 local no_delete_surfaces =
