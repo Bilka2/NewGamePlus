@@ -147,7 +147,7 @@ map_gen_gui.create_resource_table = function(parent)
   -- resources
   for _, control in pairs(game.autoplace_control_prototypes) do
     if control.category == "resource" then
-      map_gen_gui.make_autoplace_options(control.name, table, true)
+      map_gen_gui.make_autoplace_options(control.name, table, true, control)
     end
   end
 end
@@ -181,7 +181,7 @@ map_gen_gui.create_controls_with_scale_table = function(parent)
   -- trees and custom mod stuff
   for _, control in pairs(game.autoplace_control_prototypes) do
     if control.category == "terrain" and control.name ~= "planet-size" then -- planet size is a space exploration thing, we don't want the player to change it
-      map_gen_gui.make_autoplace_options(control.name, table, false)
+      map_gen_gui.make_autoplace_options(control.name, table, false, control)
     end
   end
 end
@@ -266,7 +266,7 @@ map_gen_gui.create_enemies_table = function(parent)
   -- biter bases
   for _, control in pairs(game.autoplace_control_prototypes) do
     if control.category == "enemy" then
-      map_gen_gui.make_autoplace_options(control.name, table, false)
+      map_gen_gui.make_autoplace_options(control.name, table, false, control)
     end
   end
 
@@ -287,24 +287,10 @@ map_gen_gui.create_enemies_table = function(parent)
   }
 end
 
-map_gen_gui.make_autoplace_options = function(name, parent, has_richness)
-  if name ~= "cliffs" and name ~= "water" and name ~= "moisture" and name ~= "aux" then
-    parent.add{
-      type = "label",
-      caption = {"autoplace-control-names." .. name}
-    }
-  else
-    local label = parent.add{
-      type = "label",
-      caption = {"gui-map-generator." .. name}
-    }
-    if name == "water" then
-      label.caption = {"", {"gui-map-generator." .. name}, "/", {"gui-map-generator.island-size"}}
-    elseif name == "moisture" or name == "aux" then
-      label.tooltip = {"gui-map-generator." .. name .. "-description"}
-      label.caption = util.add_info_icon_to_string(label.caption)
-    end
-  end
+-- autoplace is optional
+-- if autoplace is provided, the localised name is taken from there
+map_gen_gui.make_autoplace_options = function(name, parent, has_richness, autoplace)
+  map_gen_gui.make_autoplace_label(name, parent, autoplace)
   parent.add{
     type = "textfield",
     name = ENTIRE_PREFIX .. name .. "-freq",
@@ -331,6 +317,34 @@ map_gen_gui.make_autoplace_options = function(name, parent, has_richness)
       allow_negative = true
     }
   end
+end
+
+local autoplace_name_locale =
+{
+  ["aux"] = {"gui-map-generator.aux"},
+  ["cliffs"] = {"gui-map-generator.cliffs"},
+  ["moisture"] = {"gui-map-generator.moisture"},
+  ["water"] = {"", {"gui-map-generator.water"}, "/", {"gui-map-generator.island-size"}}
+}
+
+-- if autoplace is provided, the localised name is taken from there
+map_gen_gui.make_autoplace_label = function(name, parent, autoplace)
+  local label = parent.add{
+    type = "label"
+  }
+
+  if autoplace then
+    label.caption = autoplace.localised_name
+    assert(label.caption ~= "nil")
+    return
+  end
+
+  label.caption = autoplace_name_locale[name]
+  if name == "moisture" or name == "aux" then
+    label.tooltip = {"gui-map-generator." .. name .. "-description"}
+    label.caption = util.add_info_icon_to_string(label.caption)
+  end
+  assert(label.caption ~= "nil")
 end
 
 map_gen_gui.reset_to_defaults = function(parent)
@@ -450,9 +464,9 @@ map_gen_gui.set_to_current = function(parent, map_gen_settings)
   -- moisture and terrain type
   if property_expression_names then -- can be missing when reading from preset
     climate_table[ENTIRE_PREFIX .. "moisture-freq"].text = util.number_to_string(1 / (property_expression_names["control-setting:moisture:frequency:multiplier"] or 1)) -- inverse
-    climate_table[ENTIRE_PREFIX .. "moisture-size"].text = property_expression_names["control-setting:moisture:bias"] or "0"
+    climate_table[ENTIRE_PREFIX .. "moisture-size"].text = util.number_to_string(property_expression_names["control-setting:moisture:bias"] or 0)
     climate_table[ENTIRE_PREFIX .. "aux-freq"].text = util.number_to_string(1 / (property_expression_names["control-setting:aux:frequency:multiplier"] or 1)) -- inverse
-    climate_table[ENTIRE_PREFIX .. "aux-size"].text = property_expression_names["control-setting:aux:bias"] or "0"
+    climate_table[ENTIRE_PREFIX .. "aux-size"].text = util.number_to_string(property_expression_names["control-setting:aux:bias"] or 0)
   end
 
   -- cliffs
@@ -477,7 +491,8 @@ map_gen_gui.select_in_dropdown_or_add_and_select = function(item_to_select, drop
 end
 
 -- returns map_gen_settings, can throw!
-map_gen_gui.read = function(parent)
+-- param current_map_gen_settings only used for space exploration "planet-size" !!!
+map_gen_gui.read = function(parent, current_map_gen_settings)
   local expression_selectors_flow = parent[ENTIRE_PREFIX .. "gui-frame-2"][ENTIRE_PREFIX .. "expression-selectors-table"][ENTIRE_PREFIX .. "expression-selectors-flow"]
   local resource_table = parent[ENTIRE_PREFIX .. "gui-frame-1"][ENTIRE_PREFIX .. "resource-scroll-pane"][ENTIRE_PREFIX .."resource-table"]
   local controls_with_scale_table = parent[ENTIRE_PREFIX .. "gui-frame-2"][ENTIRE_PREFIX .. "terrain-scroll-pane"][ENTIRE_PREFIX .."controls-with-scale-table"]
@@ -534,6 +549,11 @@ map_gen_gui.read = function(parent)
         size = util.textfield_to_number_with_error(enemies_table[ENTIRE_PREFIX .. control.name .. "-size"])
       }
     end
+  end
+
+  -- but space explorations planet size still needs to be set!
+  if current_map_gen_settings.autoplace_controls["planet-size"] then
+    autoplace_controls_mine["planet-size"] = current_map_gen_settings.autoplace_controls["planet-size"]
   end
 
   -- moisture and terrain type

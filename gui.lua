@@ -210,7 +210,8 @@ gui.make_basic_settings_gui = function(parent)
   }
   config_option_table.add{
     type = "label",
-    caption = {"gui-map-generator.peaceful-mode-checkbox"}
+    caption = util.add_info_icon_to_string({"gui-map-generator.peaceful-mode-checkbox"}),
+    tooltip = {"gui-map-generator.peaceful-mode-description"}
   }
   config_option_table.add{
     type = "checkbox",

@@ -205,7 +205,7 @@ local function make_map_gen_settings(player)
   local map_gen_settings = {}
 
   -- overall settings
-  local status, map_gen_settings = pcall(map_gen_gui.read, frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-subframe"])
+  local status, map_gen_settings = pcall(map_gen_gui.read, frame_flow["new-game-plus-config-frame"]["new-game-plus-config-inner-frame"]["new-game-plus-config-subframe"], player.surface.map_gen_settings)
   if not status then
     player.print(map_gen_settings)
     player.print({"msg.new-game-plus-apply-failed"})

@@ -1,7 +1,11 @@
 ---------------------------------------------------------------------------------------------------
 Version: 5.0.1
 Date: ????
-  Changes:
+  Minor Features:
+    - Added peaceful mode description.
+  Bugfixes:
+    - Fixed locale of labels for vanilla ores.
+    - Fixed that space exploration planet size was reset to default when starting a new game plus. 
 ---------------------------------------------------------------------------------------------------
 Version: 5.0.0
 Date: 2021-02-11

@@ -1,5 +1,5 @@
 local util = {}
-local tableutil = require("util").table
+local tableutil = require("__core__/lualib/util").table
 
 util.textfield_to_uint = function(textfield)
   local number = util.textfield_to_number(textfield)
@@ -57,6 +57,10 @@ util.map_gen_size_to_number = function(map_gen_size) -- passes through 'nil'
 end
 
 util.number_to_string = function(number) -- shows up to 6 decimal places
+  -- well this isn't really the intended usecase but I'd rather not have to work around this
+  if type(number) == "string" then
+    return number
+  end
   if number == math.huge then
     return "inf"
   elseif number == -math.huge then
@@ -118,10 +122,12 @@ util.compare_localized_strings = function(string1, string2)
   return tableutil.compare(string1, string2)
 end
 
--- haystack is a string, needles is a table with key/values pairs of string = true. The value is ignored.
+---@param haystack string
+---@param needles table<string, boolean> The boolean should always be true, it is ignored.
+---@return boolean @True if the haystack contains at least one of the needles from the table
 util.str_contains_any_from_table = function(haystack, needles)
   for needle in pairs(needles) do
-    if haystack:find(needle) then
+    if haystack:find(needle, 1, true) then -- plain find, no pattern
       return true
     end
   end
